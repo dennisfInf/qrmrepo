@@ -13,6 +13,9 @@ import { UsersComponent } from './pages/about/users/users.component';
 import { ProjectComponent } from './pages/about/project/project.component';
 import { NavigationComponent } from './pages/about/components/navigation/navigation.component';
 import { PageContentComponent } from './pages/about/components/page-content/page-content.component';
+import { RegisterComponent } from './pages/register/register.component';
+import { RegisterCardComponent } from './pages/register/components/register-card/register-card.component';
+import {FormsModule} from "@angular/forms";
 
 @NgModule({
   declarations: [
@@ -26,12 +29,15 @@ import { PageContentComponent } from './pages/about/components/page-content/page
     UsersComponent,
     ProjectComponent,
     NavigationComponent,
-    PageContentComponent
+    PageContentComponent,
+    RegisterComponent,
+    RegisterCardComponent
   ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule
-  ],
+    imports: [
+        BrowserModule,
+        AppRoutingModule,
+        FormsModule
+    ],
   providers: [],
   bootstrap: [AppComponent]
 })

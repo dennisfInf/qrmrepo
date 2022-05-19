@@ -5,6 +5,7 @@ import {AboutComponent} from "./pages/about/about.component";
 import {DevelpersComponent} from "./pages/about/develpers/develpers.component";
 import {UsersComponent} from "./pages/about/users/users.component";
 import {ProjectComponent} from "./pages/about/project/project.component";
+import {RegisterComponent} from "./pages/register/register.component";
 
 const routes: Routes = [
   {
@@ -33,6 +34,10 @@ const routes: Routes = [
         component: UsersComponent
       }
     ]
+  },
+  {
+    path : "register",
+    component: RegisterComponent
   }
 ];
 
