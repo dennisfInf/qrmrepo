@@ -1,0 +1,60 @@
+<div class="w-full h-16 bg-purple-600 flex justify-between">
+  <div class="sm:hidden">
+    <div (click)="toggleMainMenu()" (blur)="closeMainMenu()"
+         class="text-xl hover:bg-purple-400 py-2 text-white rounded-xl px-2 select-none cursor-pointer m-3" tabindex="1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" />
+      </svg>
+    </div>
+    <div
+      class="origin-top-left absolute left-1 {{mainMenu}} w-56 -mt-2 rounded-xl shadow-lg bg-white overflow-hidden">
+      <div class="">
+        <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" -->
+        <a routerLink="/tutorial" class="text-gray-500 block px-4 py-2 hover:bg-purple-200">Tutorial</a>
+        <a routerLink="/docs" class="text-gray-500 block px-4 py-2 hover:bg-purple-200">Docs</a>
+        <a routerLink="/about" class="text-gray-500 block px-4 py-2 hover:bg-purple-200">About</a>
+        <a routerLink="/blog" class="text-gray-500 block px-4 py-2 hover:bg-purple-200">Blog</a>
+        <a href="https://github.com/enclaive/elon_wallet" target="_blank" class="text-purple-600 block px-4 py-2 hover:bg-purple-200">Gihub</a>
+      </div>
+    </div>
+  </div>
+  <a routerLink="/"
+     class="text-3xl text-purple-200 hover:outline outline-purple-400 outline-offset-2 outline-3 pt-1 text-white rounded-xl px-2 select-none cursor-pointer m-3 transition ease-linear">ElonMask</a>
+
+
+  <div class="hidden sm:inline-block flex">
+    <a routerLink="/tutorial" routerLinkActive="bg-purple-400"
+       class="text-lg hidden sm:inline-block hover:bg-purple-400 py-1.5 text-white rounded-xl px-2 select-none cursor-pointer m-3 transition ease-linear">Tutorial</a>
+    <a routerLink="/docs" routerLinkActive="bg-purple-400"
+       class="text-lg hidden sm:inline-block hover:bg-purple-400 py-1.5 text-white rounded-xl px-2 select-none cursor-pointer m-3 transition ease-linear">Docs</a>
+    <a routerLink="/about" routerLinkActive="bg-purple-400"
+       class="text-lg hidden sm:inline-block hover:bg-purple-400 py-1.5 text-white rounded-xl px-2 select-none cursor-pointer m-3 transition ease-linear">About</a>
+    <a routerLink="/blog" routerLinkActive="bg-purple-400"
+       class="text-lg hidden sm:inline-block hover:bg-purple-400 py-1.5 text-white rounded-xl px-2 select-none cursor-pointer m-3 transition ease-linear">Blog</a>
+    <a href="https://github.com/enclaive/elon_wallet" target="_blank" routerLinkActive="bg-purple-400"
+       class="text-lg hidden sm:inline-block hover:outline hover:outline-purple-400 py-1.5 text-white rounded-xl px-2 select-none cursor-pointer m-3 transition ease-linear">Github</a>
+  </div>
+  <div class="inline-block relative">
+    <div (click)="toggleProfileMenu()" (blur)="closeProfileMenu()"
+      class="text-xl hover:bg-purple-400 py-2 text-white rounded-xl px-2 select-none cursor-pointer m-3 transition ease-linear"  tabindex="1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+           stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+      </svg>
+    </div>
+    <div
+      class="origin-top-right absolute {{profileMenu}} right-1 w-56 -mt-2 rounded-xl shadow-lg bg-white overflow-hidden">
+      <div>
+        <a href="/sign-in" class="text-gray-500 block px-4 py-2 hover:bg-purple-200">Sign in</a>
+        <a href="/register" class="text-gray-500 block px-4 py-2 hover:bg-purple-200">Register</a>
+      </div>
+    </div>
+
+  </div>
+
+
+</div>
+
+
+
