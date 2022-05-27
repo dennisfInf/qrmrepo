@@ -11,7 +11,7 @@ docker run -d \
 -e DBNAME=replaceme \
 -e DBUSER=replaceme \
 -e DBPASSWORD=replaceme \
-test setup
+relay setup
 
 ### Run server
 docker run -d \
@@ -23,4 +23,4 @@ docker run -d \
 -e DBNAME=replaceme \
 -e DBUSER=replaceme \
 -e DBPASSWORD=replaceme \
-test serve
+relay serve
