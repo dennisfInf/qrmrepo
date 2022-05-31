@@ -11,7 +11,7 @@ export class RegisterCardComponent implements OnInit {
 
   username : string = ""
   name : string = ""
-  userId : string = "ich bin eine userId"
+  userId : string = "Ich bin eine UserId"
   constructor(private fidoService : FidoService, private authService : AuthenticationService) {
 
   }
@@ -20,10 +20,11 @@ export class RegisterCardComponent implements OnInit {
   }
 
   async register() {
-      this.authService.challenge().then(res => {
+      this.authService.registerInitialize(this.username).then(res => {
         this.fidoService.createCredential(res,this.username,this.userId,this.name).then(res => {
           console.log(res)
         })
       })
   }
+
 }

@@ -8,7 +8,7 @@ export const environment = {
     attestation: "none",               //"direct" | "enterprise" | "indirect" | "none"
     algorithm: -7,
     authenticatorSelection : {
-      authenticatorAttachment: "cross-platform",       // "cross-platform" | "platform"
+      authenticatorAttachment: "platform",       // "cross-platform" | "platform"
       requireResidentKey: false,                       // true | false
       residentKey: "preferred",                        // "discouraged" | "preferred" | "required"
       userVerification: "preferred",        // "discouraged" | "preferred" | "required"
@@ -27,6 +27,9 @@ export const environment = {
     },
     timeout: 60000,
   },
+  routes : {
+    authenticationService: "http://localhost:8080"
+  }
 };
 
 
