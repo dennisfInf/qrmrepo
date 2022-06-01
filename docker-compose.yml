@@ -7,8 +7,8 @@ services:
    image: public.ecr.aws/docker/docker/library/postgres:latest
   #  image: postgres
     environment:
-      POSTGRES_PASSWORD: $DB_SECRET
-      POSTGRES_USER: $DB_USER
+      POSTGRES_PASSWORD: '${DB_SECRET}'
+      POSTGRES_USER: '{$DB_USER}'
       POSTGRES_DB: 'userdb'
     volumes:
       - data:/var/lib/postgresql/data
@@ -23,8 +23,8 @@ services:
     environment:
       SERVERHOST: 'localhost'
       SERVERPORT: '433'
-      DBPASSWORD: $DB_SECRET
-      DBUSER: $DB_USER
+      DBPASSWORD: '${DB_SECRET}'
+      DBUSER: '${DB_USER}'
       DBNAME: 'userdb'
       DBPORT: '5432'
       DBHOST: 'backenddb'
@@ -40,8 +40,8 @@ services:
     environment:
       SERVERHOST: 'localhost'
       SERVERPORT: '433'
-      DBPASSWORD: $DB_SECRET
-      DBUSER: $DB_USER
+      DBPASSWORD: '${DB_SECRET}'
+      DBUSER: '${DB_USER}'
       DBNAME: 'userdb'
       DBPORT: '5432'
       DBHOST: 'backenddb'
