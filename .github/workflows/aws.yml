@@ -64,7 +64,7 @@ jobs:
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:frontend$IMAGE_TAG"
     
     - name: Push relay docker image
-      id: build-image
+      id: build-relay
       working-directory: ./relay
       env: 
         IMAGE_TAG: ${{ github.sha }}
