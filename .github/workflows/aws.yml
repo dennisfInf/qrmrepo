@@ -86,7 +86,6 @@ jobs:
         
           
     - name: run docker compose
-      working-directory: ./application
       env: 
         DB_SECRET: ${{ secrets.DB_SECRET }}
         DB_USER: ${{ secrets.DB_USER }}
