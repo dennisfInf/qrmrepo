@@ -18,10 +18,10 @@ export class AuthenticationService {
 
   }
 
-  async registerInitialize(username : string): Promise<string> {
+  async registerInitialize(username : string, name : string): Promise<string> {
     return axios.post(
       environment.routes.authenticationService + "/register/initialize",
-      null,
+      JSON.stringify({username: username, name : name}),
       {
         headers : {
           "x-username" : username
