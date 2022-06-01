@@ -14,56 +14,73 @@ export class AuthenticationService {
     return "challenge"
   }
 
-  async response(credential : Credential) : Promise<any> {
+  async response(credential: Credential): Promise<any> {
 
   }
 
-  async registerInitialize(username : string, name : string): Promise<string> {
+  async registerInitialize(username: string, name: string): Promise<string> {
     return axios.post(
       environment.routes.authenticationService + "/register/initialize",
-      JSON.stringify({username: username, name : name}),
+      JSON.stringify({username: username, name: name}),
       {
-        headers : {
-          "x-username" : username
+        headers: {
+          "x-username": username
         }
       }
     )
   }
 
-  async registerFinalize(username: string,token : any) : Promise<string> {
+  async registerFinalize(username: string, token: any): Promise<string> {
     return axios.post(
       environment.routes.authenticationService + "/register/finalize",
       token,
       {
-        headers : {
-          "x-username" : username
+        headers: {
+          "x-username": username
         }
       }
     )
   }
 
-  async loginInitialize(username : string) : Promise<string> {
+  async loginInitialize(username: string): Promise<string> {
     return axios.post(
       environment.routes.authenticationService + "/login/initialize",
       null,
       {
-        headers : {
-          "x-username" : username
+        headers: {
+          "x-username": username
         }
       }
     )
   }
 
-  async loginFinalize(username : string, token : any) : Promise<string> {
+  async loginFinalize(username: string, token: any): Promise<string> {
     return axios.post(
       environment.routes.authenticationService + "/login/finalize",
       token,
       {
-        headers : {
-          "x-username" : username
+        headers: {
+          "x-username": username
         }
       }
     )
   }
+
+  isLoggedIn(): boolean {
+    return true
+  }
+
+  getUserId(): string {
+    return ""
+  }
+
+  getRole(): string {
+    return ""
+  }
+
+  getToken(): string {
+    return ""
+  }
+
 
 }

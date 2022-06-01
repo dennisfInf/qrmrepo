@@ -10,8 +10,8 @@ export const environment = {
     authenticatorSelection : {
       authenticatorAttachment: "platform",       // "cross-platform" | "platform"
       requireResidentKey: false,                       // true | false
-      residentKey: "preferred",                        // "discouraged" | "preferred" | "required"
-      userVerification: "preferred",        // "discouraged" | "preferred" | "required"
+      residentKey: "discouraged",                        // "discouraged" | "preferred" | "required"
+      userVerification: "required",        // "discouraged" | "preferred" | "required"
     },
     excludeCredentials:[],
     extensions: {
@@ -20,7 +20,7 @@ export const environment = {
       credProps: false,
       uvm: false,
     },
-    pubKeyCredParams : [],
+    pubKeyCredParams : [ {type: "public-key", alg: -7}],
     rp : {
       domain: "localhost",
       name: "elon mask"
