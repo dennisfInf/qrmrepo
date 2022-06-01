@@ -54,7 +54,7 @@ services:
   
   frontend: 
     image: $ECR_REGISTRY/$ECR_REPOSITORY:frontend$IMAGE_TAG
-    build: ./frontend
+ #   build: ./frontend
     depends_on:
       - relay
     networks:
