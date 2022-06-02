@@ -13,7 +13,7 @@ services:
     volumes:
       - data:/var/lib/postgresql/data
     networks:  
-      - dbnet
+      - frontbacknet
 
   dbprepare:
     image: $ECR_REGISTRY/$ECR_REPOSITORY:relayP$IMAGE_TAG
@@ -30,7 +30,7 @@ services:
       DBHOST: 'backenddb'
     command: setup
     networks:
-      - dbnet
+      - frontbacknet
     
   relay:
     image: $ECR_REGISTRY/$ECR_REPOSITORY:relay$IMAGE_TAG
@@ -47,7 +47,6 @@ services:
       DBHOST: 'backenddb'
     command: serve
     networks:
-      - dbnet
       - frontbacknet
     ports:
       - 433:433
@@ -70,4 +69,3 @@ volumes:
 
 networks:
   frontbacknet:
-  dbnet:
