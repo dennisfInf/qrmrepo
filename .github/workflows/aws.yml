@@ -1,4 +1,4 @@
-#TEST
+#
 name: Deploy to Amazon ECS
 
 on:
@@ -42,8 +42,8 @@ jobs:
           echo "old number: $OLD_RUN "
           echo "deleting.."
           aws cloudformation delete-stack --stack-name compose-infrastructure$OLD_RUN
-          aws cloudformation delete-stack --stack-name application
-          aws cloudformation wait stack-delete-complete --stack-name application
+          aws cloudformation delete-stack --stack-name elon
+          aws cloudformation wait stack-delete-complete --stack-name elon
 
       
     - name: adding template infrastructure
@@ -72,6 +72,8 @@ jobs:
       run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:relay$IMAGE_TAG .
           docker push  $ECR_REGISTRY/$ECR_REPOSITORY:relay$IMAGE_TAG
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:relayP$IMAGE_TAG .
+          docker push  $ECR_REGISTRY/$ECR_REPOSITORY:relayP$IMAGE_TAG
           echo "::set-output name=image:: $ECR_REGISTRY/$ECR_REPOSITORY:relay$IMAGE_TAG"
         
       
@@ -86,7 +88,6 @@ jobs:
         
           
     - name: run docker compose
-      working-directory: ./application
       env: 
         DB_SECRET: ${{ secrets.DB_SECRET }}
         DB_USER: ${{ secrets.DB_USER }}
@@ -98,5 +99,4 @@ jobs:
         echo "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
         docker context create ecs elonmask --from-env
         docker context use elonmask
-        docker compose up -d
-
+        docker compose --project-name elon up -d
