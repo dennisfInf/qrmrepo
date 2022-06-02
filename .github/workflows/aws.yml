@@ -98,4 +98,4 @@ jobs:
         echo "testzwo: $ECR_REGISTRY/$ECR_REPOSITORY:frontend$IMAGE_TAG"
         docker context create ecs elonmask --from-env
         docker context use elonmask
-        docker compose --project-name elon up -d
+        docker compose --project-name elon up
