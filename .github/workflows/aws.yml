@@ -99,4 +99,4 @@ jobs:
         echo "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
         docker context create ecs elonmask --from-env
         docker context use elonmask
-        docker-compose --project-name elon up -d
+        docker compose --project-name elon up -d
