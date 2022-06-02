@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import axios from "axios";
 import {environment} from "../../environments/environment";
-
+import * as moment from "moment";
 @Injectable({
   providedIn: 'root'
 })
@@ -66,8 +66,8 @@ export class AuthenticationService {
     )
   }
 
-  isLoggedIn(): boolean {
-    return true
+  public isLoggedIn() {
+    return moment().isBefore(this.getExpiration());
   }
 
   getUserId(): string {
@@ -82,5 +82,31 @@ export class AuthenticationService {
     return ""
   }
 
+  private setSession(authResult : any) {
+    const expiresAt = moment().add(authResult.expiresIn,'second');
+
+    localStorage.setItem('id_token', authResult.idToken);
+    localStorage.setItem("expires_at", JSON.stringify(expiresAt.valueOf()) );
+  }
+
+  logout() {
+    localStorage.removeItem("id_token");
+    localStorage.removeItem("expires_at");
+  }
+
+
+  isLoggedOut() {
+    return !this.isLoggedIn();
+  }
+
+  getExpiration() {
+    const expiration = localStorage.getItem("expires_at");
+    let expiresAt = ""
+    if (expiration != null) {
+       expiresAt = JSON.parse(expiration);
+
+    }
+    return moment(expiresAt);
+  }
 
 }
