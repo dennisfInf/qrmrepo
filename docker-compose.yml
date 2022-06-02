@@ -16,7 +16,7 @@ services:
       - dbnet
 
   dbprepare:
-    image: $ECR_REGISTRY/$ECR_REPOSITORY:relayP$IMAGE_TAG
+    image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:relay${IMAGE_TAG}
     #build: ./relay
     depends_on:
       - backenddb
@@ -33,7 +33,7 @@ services:
       - dbnet
     
   relay:
-    image: $ECR_REGISTRY/$ECR_REPOSITORY:relay$IMAGE_TAG
+    image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:relay${IMAGE_TAG}
 #    build: ./relay
     depends_on:
       - dbprepare
@@ -54,7 +54,7 @@ services:
         x-aws-protocol: http
   
   frontend: 
-    image: $ECR_REGISTRY/$ECR_REPOSITORY:frontend$IMAGE_TAG
+    image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:frontend${IMAGE_TAG}
  #   build: ./frontend
     environment:
        API_URL: 'relay'

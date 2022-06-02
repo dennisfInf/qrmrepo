@@ -72,8 +72,6 @@ jobs:
       run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:relay$IMAGE_TAG .
           docker push  $ECR_REGISTRY/$ECR_REPOSITORY:relay$IMAGE_TAG
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:relayP$IMAGE_TAG .
-          docker push  $ECR_REGISTRY/$ECR_REPOSITORY:relayP$IMAGE_TAG
           echo "::set-output name=image:: $ECR_REGISTRY/$ECR_REPOSITORY:relay$IMAGE_TAG"
         
       
@@ -96,7 +94,8 @@ jobs:
       run: |
         echo $AWS_ELB
         curl -L https://raw.githubusercontent.com/docker/compose-cli/main/scripts/install/install_linux.sh | sh
-        echo "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+        echo "test: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+        echo "testzwo: $ECR_REGISTRY/$ECR_REPOSITORY:frontend$IMAGE_TAG"
         docker context create ecs elonmask --from-env
         docker context use elonmask
         docker compose --project-name elon up -d
