@@ -57,7 +57,7 @@ services:
     image: $ECR_REGISTRY/$ECR_REPOSITORY:frontend$IMAGE_TAG
  #   build: ./frontend
     environment:
-       RELAYHOST: 'relay'
+       API_URL: 'relay'
     depends_on:
       - relay
     networks:
