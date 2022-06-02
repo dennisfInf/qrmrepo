@@ -4,7 +4,7 @@ x-aws-loadbalancer: ${AWS_ELB}
 
 services:
   backenddb:
-    image: public.ecr.aws/docker/docker/library/postgres:latest
+    image: public.ecr.aws/ubuntu/postgres:12-20.04_beta
   #  image: postgres
     environment:
       POSTGRES_PASSWORD: '${DB_SECRET}'
