@@ -4,7 +4,7 @@ x-aws-loadbalancer: ${AWS_ELB}
 
 services:
   backenddb:
-   image: public.ecr.aws/docker/docker/library/postgres:latest
+    image: public.ecr.aws/docker/docker/library/postgres:latest
   #  image: postgres
     environment:
       POSTGRES_PASSWORD: '${DB_SECRET}'
@@ -16,7 +16,7 @@ services:
       - dbnet
 
   dbprepare:
-    image: $ECR_REGISTRY/$ECR_REPOSITORY:relay$IMAGE_TAG
+    image: $ECR_REGISTRY/$ECR_REPOSITORY:relayP$IMAGE_TAG
     #build: ./relay
     depends_on:
       - backenddb
