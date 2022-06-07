@@ -6,6 +6,7 @@ docker run -d \
 --name relay \
 -e SERVERHOST=replaceme \
 -e SERVERPORT=replaceme \
+-e KUBECONFIGPATH=replaceme \
 -e DBHOST=replaceme \
 -e DBPORT=replaceme \
 -e DBNAME=replaceme \
@@ -18,6 +19,7 @@ docker run -d \
 --name relay \
 -e SERVERHOST=replaceme \
 -e SERVERPORT=replaceme \
+-e KUBECONFIGPATH=replaceme \
 -e DBHOST=replaceme \
 -e DBPORT=replaceme \
 -e DBNAME=replaceme \
