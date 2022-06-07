@@ -34,7 +34,10 @@ func newServeCommand() *cobra.Command {
 
 			db := persistence.New(cfg.Postgres)
 
-			s := server.New(cfg.Server, db)
+			s, err := server.New(cfg.Server, db)
+			if err != nil {
+				return fmt.Errorf("failed to create server: %w", err)
+			}
 			go func() {
 				err := s.Run()
 				if err != nil {
