@@ -9,6 +9,7 @@ env:
   AWS_REGION: eu-central-1                
   ECR_REPOSITORY: elon-mask 
   RUN_NUMBER: ${{ github.run_number }}
+  IMAGE_TAG: ${{ github.sha }}
 
 permissions:
   contents: read
@@ -55,23 +56,21 @@ jobs:
       id: build-image
       working-directory: ./frontend
       env: 
-        IMAGE_TAG: ${{ github.sha }}
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:frontend$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:frontend$IMAGE_TAG
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:frontend$IMAGE_TAG"
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:frontend${{ env.IMAGE_TAG }} .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:frontend${{ env.IMAGE_TAG }}
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:frontend${{ env.IMAGE_TAG }}"
     
     - name: Push relay docker image
       id: build-relay
       working-directory: ./relay
       env: 
-        IMAGE_TAG: ${{ github.sha }}
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:relay$IMAGE_TAG .
-          docker push  $ECR_REGISTRY/$ECR_REPOSITORY:relay$IMAGE_TAG
-          echo "::set-output name=image:: $ECR_REGISTRY/$ECR_REPOSITORY:relay$IMAGE_TAG"
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:relay${{ env.IMAGE_TAG }} .
+          docker push  $ECR_REGISTRY/$ECR_REPOSITORY:relay${{ env.IMAGE_TAG }}
+          echo "::set-output name=image:: $ECR_REGISTRY/$ECR_REPOSITORY:relay${{ env.IMAGE_TAG }}"
         
       
     - name: set environment variables
@@ -88,13 +87,12 @@ jobs:
       env: 
         DB_SECRET: ${{ secrets.DB_SECRET }}
         DB_USER: ${{ secrets.DB_USER }}
-        IMAGE_TAG: ${{ github.sha }}
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
         echo $AWS_ELB
         curl -L https://raw.githubusercontent.com/docker/compose-cli/main/scripts/install/install_linux.sh | sh
-        echo "test: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-        echo "testzwo: $ECR_REGISTRY/$ECR_REPOSITORY:frontend$IMAGE_TAG"
+        echo "test: $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.IMAGE_TAG }}"
+        echo "testzwo: $ECR_REGISTRY/$ECR_REPOSITORY:frontend${{ env.IMAGE_TAG }}"
         docker context create ecs elonmask --from-env
         docker context use elonmask
         docker compose --project-name elon up -d
