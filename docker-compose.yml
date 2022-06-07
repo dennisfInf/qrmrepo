@@ -14,29 +14,12 @@ services:
       - data:/var/lib/postgresql/data
     networks:  
       - dbnet
-
-  dbprepare:
-    image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:relay${IMAGE_TAG}
-    #build: ./relay
-    depends_on:
-      - backenddb
-    environment:
-      SERVERHOST: 'localhost'
-      SERVERPORT: '433'
-      DBPASSWORD: '${DB_SECRET}'
-      DBUSER: '${DB_USER}'
-      DBNAME: 'userdb'
-      DBPORT: '5432'
-      DBHOST: 'backenddb'
-    command: setup
-    networks:
-      - dbnet
     
   relay:
     image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:relay${IMAGE_TAG}
 #    build: ./relay
     depends_on:
-      - dbprepare
+      - backenddb
     environment:
       SERVERHOST: 'localhost'
       SERVERPORT: '433'
