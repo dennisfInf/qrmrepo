@@ -41,9 +41,9 @@ jobs:
           OLD_RUN=`expr ${{ env.RUN_NUMBER }} - 1`
           echo "old number: $OLD_RUN "
           echo "deleting.."
-#          aws cloudformation delete-stack --stack-name compose-infrastructure$OLD_RUN
           aws cloudformation delete-stack --stack-name elon
           aws cloudformation wait stack-delete-complete --stack-name elon
+#          aws cloudformation delete-stack --stack-name compose-infrastructure$OLD_RUN
 
       
 #    - name: adding template infrastructure
