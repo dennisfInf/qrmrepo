@@ -18,8 +18,8 @@ services:
   dbprepare:
     image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:relay${IMAGE_TAG}
     #build: ./relay
-#    depends_on:
-#      - backenddb
+    depends_on:
+      - backenddb
     environment:
       SERVERHOST: 'localhost'
       SERVERPORT: '433'
@@ -29,14 +29,22 @@ services:
       DBPORT: '5432'
       DBHOST: 'backenddb'
     command: setup
+    ports: 
+        - target: 434
+          x-aws-protocol: http
+    deploy:
+      x-aws-autoscaling:
+        min: 2
+        max: 10 #required
+        cpu: 75  
     networks:
       - dbnet
     
   relay:
     image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:relay${IMAGE_TAG}
 #    build: ./relay
-#    depends_on:
-#      - dbprepare
+    depends_on:
+      - dbprepare
     environment:
       SERVERHOST: 'localhost'
       SERVERPORT: '433'
@@ -49,6 +57,11 @@ services:
     networks:
       - dbnet
       - frontbacknet
+    deploy:
+      x-aws-autoscaling:
+        min: 2
+        max: 10 #required
+        cpu: 75  
     ports:
       - target: 433
         x-aws-protocol: http
@@ -58,10 +71,15 @@ services:
  #   build: ./frontend
     environment:
        API_URL: 'relay'
-#    depends_on:
-#      - relay
+    depends_on:
+      - relay
     networks:
       - frontbacknet
+    deploy:
+      x-aws-autoscaling:
+        min: 2
+        max: 10 #required
+        cpu: 75  
     ports:
       - target: 80
         x-aws-protocol: http
