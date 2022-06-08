@@ -1,3 +1,7 @@
+x-aws-vpc: ${AWS_VPC}
+x-aws-cluster: ${AWS_ECS_CLUSTER}
+x-aws-loadbalancer: ${AWS_ELB}
+
 services:
   backenddb:
     image: public.ecr.aws/ubuntu/postgres:12-20.04_beta
@@ -14,8 +18,8 @@ services:
   dbprepare:
     image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:relay${IMAGE_TAG}
     #build: ./relay
-    depends_on:
-      - backenddb
+#    depends_on:
+#      - backenddb
     environment:
       SERVERHOST: 'localhost'
       SERVERPORT: '433'
@@ -31,8 +35,8 @@ services:
   relay:
     image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:relay${IMAGE_TAG}
 #    build: ./relay
-    depends_on:
-      - dbprepare
+#    depends_on:
+#      - dbprepare
     environment:
       SERVERHOST: 'localhost'
       SERVERPORT: '433'
@@ -54,8 +58,8 @@ services:
  #   build: ./frontend
     environment:
        API_URL: 'relay'
-    depends_on:
-      - relay
+#    depends_on:
+#      - relay
     networks:
       - frontbacknet
     ports:

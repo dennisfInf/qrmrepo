@@ -35,6 +35,23 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
       
+    - name: Delete previous cloud-deployement
+      if: ${{ env.RUN_NUMBER > 1}}
+      run : |
+          OLD_RUN=`expr ${{ env.RUN_NUMBER }} - 1`
+          echo "old number: $OLD_RUN "
+          echo "deleting.."
+          aws cloudformation delete-stack --stack-name compose-infrastructure$OLD_RUN
+          aws cloudformation delete-stack --stack-name elon
+          aws cloudformation wait stack-delete-complete --stack-name elon
+
+      
+    - name: adding template infrastructure
+      working-directory: ./infrastructure
+      run: |
+           aws cloudformation create-stack --stack-name compose-infrastructure${{ env.RUN_NUMBER }} --template-body file://cloudformation.yaml --capabilities CAPABILITY_IAM 
+           aws cloudformation wait stack-create-complete --stack-name  compose-infrastructure${{ env.RUN_NUMBER }}            
+           
     - name: Push frontend docker image
       id: build-image
       working-directory: ./frontend
@@ -54,7 +71,18 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:relay${{ env.IMAGE_TAG }} .
           docker push  $ECR_REGISTRY/$ECR_REPOSITORY:relay${{ env.IMAGE_TAG }}
           echo "::set-output name=image:: $ECR_REGISTRY/$ECR_REPOSITORY:relay${{ env.IMAGE_TAG }}"
-                  
+        
+      
+    - name: set environment variables
+      run: |
+          echo "$(aws cloudformation describe-stacks --stack-name compose-infrastructure${{ env.RUN_NUMBER }} --query "Stacks[0].Outputs[?OutputKey=='ClusterName'].OutputValue" --output text)"
+          echo "$(aws cloudformation describe-stacks --stack-name compose-infrastructure${{ env.RUN_NUMBER }} --query "Stacks[0].Outputs[?OutputKey=='LoadbalancerId'].OutputValue" --output text)"
+          echo "$(aws cloudformation describe-stacks --stack-name compose-infrastructure${{ env.RUN_NUMBER }} --query "Stacks[0].Outputs[?OutputKey=='VpcId'].OutputValue" --output text)"
+          echo "AWS_VPC=$(aws cloudformation describe-stacks --stack-name compose-infrastructure${{ env.RUN_NUMBER }} --query "Stacks[0].Outputs[?OutputKey=='VpcId'].OutputValue" --output text)" >> $GITHUB_ENV
+          echo "AWS_ECS_CLUSTER=$(aws cloudformation describe-stacks --stack-name compose-infrastructure${{ env.RUN_NUMBER }} --query "Stacks[0].Outputs[?OutputKey=='ClusterName'].OutputValue" --output text)" >> $GITHUB_ENV
+          echo "AWS_ELB=$(aws cloudformation describe-stacks --stack-name compose-infrastructure${{ env.RUN_NUMBER }} --query "Stacks[0].Outputs[?OutputKey=='LoadbalancerId'].OutputValue" --output text)" >> $GITHUB_ENV
+        
+          
     - name: run docker compose
       env: 
         DB_SECRET: ${{ secrets.DB_SECRET }}
@@ -67,4 +95,4 @@ jobs:
         echo "testzwo: $ECR_REGISTRY/$ECR_REPOSITORY:frontend${{ env.IMAGE_TAG }}"
         docker context create ecs elonmask --from-env
         docker context use elonmask
-        docker compose --project-name elont up -d
+        docker compose --project-name elon up -d
