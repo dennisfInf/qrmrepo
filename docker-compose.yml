@@ -4,7 +4,7 @@ x-aws-loadbalancer: ${AWS_ELB}
 
 services:
   backenddb:
-    image: public.ecr.aws/ubuntu/postgres:12-20.04_beta
+    image: 'public.ecr.aws/ubuntu/postgres:12-20.04_beta'
   #  image: postgres
     environment:
       POSTGRES_PASSWORD: '${DB_SECRET}'
@@ -16,11 +16,14 @@ services:
       - dbnet
 
   dbprepare:
-    image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:relay${IMAGE_TAG}
+    image: '${ECR_REGISTRY}/${ECR_REPOSITORY}:relay${IMAGE_TAG}'
     #build: ./relay
     depends_on:
       - backenddb
     environment:
+      TESTVAR: '${IMAGE_TAG}'
+      TESTVART: '${ECR_REGISTRY}'
+      TESTVARK: '${ECR_REPOSITORY}'
       SERVERHOST: 'localhost'
       SERVERPORT: '433'
       DBPASSWORD: '${DB_SECRET}'
@@ -35,13 +38,13 @@ services:
     deploy:
       x-aws-autoscaling:
         min: 2
-        max: 10 #required
-        cpu: 75  
+        max: 10
+        cpu: 75
     networks:
       - dbnet
     
   relay:
-    image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:relay${IMAGE_TAG}
+    image: '${ECR_REGISTRY}/${ECR_REPOSITORY}:relay${IMAGE_TAG}'
 #    build: ./relay
     depends_on:
       - dbprepare
@@ -60,14 +63,14 @@ services:
     deploy:
       x-aws-autoscaling:
         min: 2
-        max: 10 #required
-        cpu: 75  
+        max: 10
+        cpu: 75
     ports:
       - target: 433
         x-aws-protocol: http
   
   frontend: 
-    image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:frontend${IMAGE_TAG}
+    image: '${ECR_REGISTRY}/${ECR_REPOSITORY}:frontend${IMAGE_TAG}'
  #   build: ./frontend
     environment:
        API_URL: 'relay'
@@ -78,8 +81,8 @@ services:
     deploy:
       x-aws-autoscaling:
         min: 2
-        max: 10 #required
-        cpu: 75  
+        max: 10
+        cpu: 75
     ports:
       - target: 80
         x-aws-protocol: http
