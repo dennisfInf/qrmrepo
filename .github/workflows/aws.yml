@@ -75,9 +75,6 @@ jobs:
       
     - name: set environment variables
       run: |
-          echo "$(aws cloudformation describe-stacks --stack-name compose-infrastructure${{ env.RUN_NUMBER }} --query "Stacks[0].Outputs[?OutputKey=='ClusterName'].OutputValue" --output text)"
-          echo "$(aws cloudformation describe-stacks --stack-name compose-infrastructure${{ env.RUN_NUMBER }} --query "Stacks[0].Outputs[?OutputKey=='LoadbalancerId'].OutputValue" --output text)"
-          echo "$(aws cloudformation describe-stacks --stack-name compose-infrastructure${{ env.RUN_NUMBER }} --query "Stacks[0].Outputs[?OutputKey=='VpcId'].OutputValue" --output text)"
           echo "AWS_VPC=$(aws cloudformation describe-stacks --stack-name compose-infrastructure53 --query "Stacks[0].Outputs[?OutputKey=='VpcId'].OutputValue" --output text)" >> $GITHUB_ENV
           echo "AWS_ECS_CLUSTER=$(aws cloudformation describe-stacks --stack-name compose-infrastructure53 --query "Stacks[0].Outputs[?OutputKey=='ClusterName'].OutputValue" --output text)" >> $GITHUB_ENV
           echo "AWS_ELB=$(aws cloudformation describe-stacks --stack-name compose-infrastructure53 --query "Stacks[0].Outputs[?OutputKey=='LoadbalancerId'].OutputValue" --output text)" >> $GITHUB_ENV
