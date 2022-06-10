@@ -8,7 +8,7 @@ services:
   #  image: postgres
     environment:
       POSTGRES_PASSWORD: '${DB_SECRET}'
-      POSTGRES_USER: '{$DB_USER}'
+      POSTGRES_USER: 'postgres'
       POSTGRES_DB: 'userdb'
     volumes:
       - data:/var/lib/postgresql/data
@@ -21,13 +21,10 @@ services:
     depends_on:
       - backenddb
     environment:
-      TESTVAR: '${IMAGE_TAG}'
-      TESTVART: '${ECR_REGISTRY}'
-      TESTVARK: '${ECR_REPOSITORY}'
       SERVERHOST: 'localhost'
       SERVERPORT: '433'
       DBPASSWORD: '${DB_SECRET}'
-      DBUSER: '${DB_USER}'
+      DBUSER: 'postgres'
       DBNAME: 'userdb'
       DBPORT: '5432'
       DBHOST: 'backenddb'
@@ -35,11 +32,6 @@ services:
     ports: 
         - target: 434
           x-aws-protocol: http
-    deploy:
-       resources:
-         limits:
-           cpus: '0.5'
-           memory: 2Gb
     networks:
       - dbnet
     
@@ -52,7 +44,7 @@ services:
       SERVERHOST: 'localhost'
       SERVERPORT: '433'
       DBPASSWORD: '${DB_SECRET}'
-      DBUSER: '${DB_USER}'
+      DBUSER: 'postgres'
       DBNAME: 'userdb'
       DBPORT: '5432'
       DBHOST: 'backenddb'
@@ -60,11 +52,6 @@ services:
     networks:
       - dbnet
       - frontbacknet
-    deploy:
-       resources:
-         limits:
-           cpus: '0.5'
-           memory: 2Gb
     ports:
       - target: 433
         x-aws-protocol: http
@@ -78,11 +65,6 @@ services:
       - relay
     networks:
       - frontbacknet
-    deploy:
-      resources:
-         limits:
-           cpus: '0.5'
-           memory: 2Gb
     ports:
       - target: 80
         x-aws-protocol: http
