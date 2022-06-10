@@ -36,10 +36,10 @@ services:
         - target: 434
           x-aws-protocol: http
     deploy:
-      x-aws-autoscaling:
-        min: 2
-        max: 10
-        cpu: 75
+       resources:
+         limits:
+           cpus: '0.5'
+           memory: 2Gb
     networks:
       - dbnet
     
@@ -61,10 +61,10 @@ services:
       - dbnet
       - frontbacknet
     deploy:
-      x-aws-autoscaling:
-        min: 2
-        max: 10
-        cpu: 75
+       resources:
+         limits:
+           cpus: '0.5'
+           memory: 2Gb
     ports:
       - target: 433
         x-aws-protocol: http
@@ -79,10 +79,10 @@ services:
     networks:
       - frontbacknet
     deploy:
-      x-aws-autoscaling:
-        min: 2
-        max: 10
-        cpu: 75
+      resources:
+         limits:
+           cpus: '0.5'
+           memory: 2Gb
     ports:
       - target: 80
         x-aws-protocol: http
