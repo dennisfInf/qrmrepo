@@ -39,8 +39,6 @@ services:
   relay:
     image: '${ECR_REGISTRY}/${ECR_REPOSITORY}:relay${IMAGE_TAG}'
 #    build: ./relay
-    depends_on:
-      - dbprepare
     environment:
       SERVERHOST: 'localhost'
       SERVERPORT: '433'
