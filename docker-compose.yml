@@ -43,7 +43,7 @@ services:
       SERVERHOST: 'localhost'
       SERVERPORT: '433'
       DBPASSWORD: '${DB_SECRET}'
-      KUBECONFIGPATH: './config/config'
+      KUBECONFIGPATH: '/app/config/config'
       DBUSER: 'postgres'
       DBNAME: 'userdb'
       DBPORT: '5432'
