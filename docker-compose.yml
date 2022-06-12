@@ -49,6 +49,8 @@ services:
       DBPORT: '5432'
       DBHOST: 'backenddb'
     command: serve
+    depends_on:
+      - backenddb
     networks:
       - dbnet
       - frontbacknet
