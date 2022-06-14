@@ -52,33 +52,30 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 	//TODO replace with real deployment
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "demo-deployment",
+			Labels: map[string]string{
+				"app": "ubuntu",
+			},
+			Name: "ubuntu",
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: int32Ptr(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": "demo",
+					"app": "ubuntu",
 				},
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"app": "demo",
+						"app": "ubuntu",
 					},
 				},
 				Spec: apiv1.PodSpec{
 					Containers: []apiv1.Container{
 						{
-							Name:  "web",
-							Image: "nginx:1.12",
-							Ports: []apiv1.ContainerPort{
-								{
-									Name:          "http",
-									Protocol:      apiv1.ProtocolTCP,
-									ContainerPort: 80,
-								},
-							},
+							Name:    "ubuntu",
+							Image:   "ubuntu",
+							Command: []string{"/bin/sleep", "3650d"},
 						},
 					},
 				},
