@@ -39,6 +39,7 @@ func New(cfg config.ServerConfig, repoManager RepositoryManager) (*Server, error
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse conf: %w", err)
 	}
+
 	clientset, err := kubernetes.NewForConfig(kubeconf)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create clientset: %w", err)

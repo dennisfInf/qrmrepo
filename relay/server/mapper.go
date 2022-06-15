@@ -88,7 +88,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	pod, err := s.clientset.CoreV1().Pods("enclaves").Get(ctx, result.GetObjectMeta().GetName(), metav1.GetOptions{})
+	pod, err := s.clientset.CoreV1().Pods("enclave-ns").Get(ctx, result.GetObjectMeta().GetName(), metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}
