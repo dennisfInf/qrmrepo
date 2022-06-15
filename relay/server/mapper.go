@@ -47,7 +47,7 @@ func (s *Server) UserAddressMapper() echo.MiddlewareFunc {
 }
 
 func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
-	deploymentsClient := s.clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
+	deploymentsClient := s.clientset.AppsV1().Deployments("enclave-ns")
 
 	//TODO replace with real deployment
 	deployment := &appsv1.Deployment{
