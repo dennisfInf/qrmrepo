@@ -7,7 +7,7 @@ import (
 	"github.com/enclaive/relay/models"
 	"github.com/labstack/echo/v4"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/rest"
 	"net/http"
 	"time"
 )
@@ -35,9 +35,9 @@ func New(cfg config.ServerConfig, repoManager RepositoryManager) (*Server, error
 	e.Server.WriteTimeout = 10 * time.Second
 	e.Server.IdleTimeout = 120 * time.Second
 
-	kubeconf, err := clientcmd.BuildConfigFromFlags("", cfg.KubeConfigPath)
+	kubeconf, err := rest.InClusterConfig()
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse conf: %w", err)
+		return nil, fmt.Errorf("failed to get kubeconf: %w", err)
 	}
 
 	clientset, err := kubernetes.NewForConfig(kubeconf)
