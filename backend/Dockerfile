@@ -18,3 +18,4 @@ EXPOSE 80 443
 USER nonroot:nonroot
 
 ENTRYPOINT [ "/app/backend" ]
+CMD [ "serve" ]
