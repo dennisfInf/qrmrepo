@@ -38,6 +38,7 @@ spec:
             value: '5444'
           - name: DBHOST
             value: db_service
-          command: ["serve"]
+          args:
+          - "serve"
           ports:
           - containerPort: 433
