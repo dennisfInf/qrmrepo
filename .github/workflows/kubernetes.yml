@@ -84,7 +84,7 @@ jobs:
           export KUBECONFIG=kubeconfig
           sed 's/DBPWPLACEHOLDER/${{ env.DB_SECRET}}/' db-deployment.yaml
           kubectl apply -f .
-          kubectl wait deployment -n default db-deployment  --for=condition=available --timeout=90s
+          kubectl wait deployment -n default db-deployment --for=condition=available --timeout=90s
              
 
     - name: push dbprep to kubernetes cluster
