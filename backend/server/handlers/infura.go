@@ -35,6 +35,7 @@ func (w *InfuraHandler) PrepareTransaction() echo.HandlerFunc {
 		PublicKeyX big.Int `json:"public_key_x"`
 		PublicKeyY big.Int `json:"public_key_y"`
 		ToAddress  string  `json:"to_address"`
+		Value      big.Int `json:"value"`
 	}
 
 	type output struct {
@@ -68,10 +69,9 @@ func (w *InfuraHandler) PrepareTransaction() echo.HandlerFunc {
 			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
 
-		value := big.NewInt(100000000000000000) // in wei (0.1 eth)
-		gasLimit := uint64(21000)               // in units
-		tipCap := big.NewInt(2000000000)        // maxPriorityFeePerGas = 2 Gwei
-		feeCap := big.NewInt(20000000000)       // maxFeePerGas = 20 Gwei
+		gasLimit := uint64(21000)         // in units
+		tipCap := big.NewInt(2000000000)  // maxPriorityFeePerGas = 2 Gwei
+		feeCap := big.NewInt(20000000000) // maxFeePerGas = 20 Gwei
 
 		toAddress := common.HexToAddress(in.ToAddress)
 		var data []byte
@@ -88,7 +88,7 @@ func (w *InfuraHandler) PrepareTransaction() echo.HandlerFunc {
 			GasTipCap: tipCap,
 			Gas:       gasLimit,
 			To:        &toAddress,
-			Value:     value,
+			Value:     &in.Value,
 			Data:      data,
 		})
 
@@ -102,7 +102,7 @@ func (w *InfuraHandler) PrepareTransaction() echo.HandlerFunc {
 			GasTipCap: *tipCap,
 			Gas:       gasLimit,
 			ToAddress: in.ToAddress,
-			Value:     *value,
+			Value:     in.Value,
 			Data:      data,
 		})
 	}
