@@ -48,8 +48,7 @@ jobs:
           kubectl create secret docker-registry regcred \
              --docker-server=$ECR_REGISTRY \
              --docker-username=AWS \
-             --docker-password=$(aws ecr get-login-password) \
-             --namespace=health-check
+             --docker-password=$(aws ecr get-login-password)
        
     - name: Push frontend docker image to ECR
       id: build-image
