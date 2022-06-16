@@ -35,7 +35,20 @@ jobs:
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
-            
+    
+    - name: install kubectl
+      run: |
+          curl -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.22.6/2022-03-09/bin/linux/amd64/kubectl
+          chmod +x ./kubectl
+          mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
+          echo ${{ secrets.KUBE_CONFIG_DATA }} | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+          kubectl create secret docker-registry regcred \
+             --docker-server=$ECR_REGISTRY \
+             --docker-username=AWS \
+             --docker-password=$(aws ecr get-login-password) \
+             --namespace=health-check
+       
     - name: Push frontend docker image to ECR
       id: build-image
       working-directory: ./frontend
@@ -56,19 +69,6 @@ jobs:
           docker push  ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}
           echo "::set-output name=image::${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}"
 
-    - name: install kubectl
-      run: |
-          curl -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.22.6/2022-03-09/bin/linux/amd64/kubectl
-          chmod +x ./kubectl
-          mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
-          cat ${{ secrets.KUBE_CONFIG_DATA }} | base64 -d > kubeconfig
-          export KUBECONFIG=kubeconfig
-          kubectl create secret docker-registry regcred \
-             --docker-server=$ECR_REGISTRY \
-             --docker-username=AWS \
-             --docker-password=$(aws ecr get-login-password) \
-             --namespace=health-check
-             
     - name: Push db to kubernetes cluster
       env: 
        DB_SECRET: ${{ secrets.DB_SECRET }}
@@ -111,4 +111,3 @@ jobs:
       run: |
           sed 's/# IMGPLACEHOLDER/${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }}/' frontend-deployment.yaml
           kubectl apply -f .
-
