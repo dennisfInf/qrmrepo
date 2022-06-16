@@ -96,7 +96,6 @@ jobs:
       run: |
           echo "${{ secrets.KUBE_CONFIG_DATA }}" > kubeconfig
           export KUBECONFIG=kubeconfig
-          kubectl create configmap config --from-file kubeconfig
           kubectl apply -f dbprep-service.yaml
           rpl "DBPWPLACEHOLDER" "${{ env.DB_SECRET}}" dbprep-deployment.yaml
           rpl "IMGPLACEHOLDER" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }}" dbprep-deployment.yaml
