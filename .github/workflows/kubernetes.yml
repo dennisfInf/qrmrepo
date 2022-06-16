@@ -1,4 +1,4 @@
-#TestDeplo
+#TestDeploy
 name: Deploy to Amazon ECS
 
 on:
