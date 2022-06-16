@@ -23,7 +23,7 @@ spec:
           image: "IMGPLACEHOLDER"
           env:
           - name: SERVERPORT
-            value: '82'
+            value: '2531'
           - name: DBPASSWORD
             value: 'DBPWPLACEHOLDER'
           - name: DBUSER
@@ -35,4 +35,4 @@ spec:
           - name: DBHOST
             value: db-service
           ports:
-          - containerPort: 512
+          - containerPort: 2531

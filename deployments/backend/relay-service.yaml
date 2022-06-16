@@ -7,5 +7,5 @@ spec:
     app: relay
   ports:
     - protocol: TCP
-      port: 513
-      targetPort: 512
+      port: 2532
+      targetPort: 2531
