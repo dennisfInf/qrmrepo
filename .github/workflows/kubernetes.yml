@@ -84,6 +84,7 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG_DATA }}" > kubeconfig
           export KUBECONFIG=kubeconfig
           rpl "DBPWPLACEHOLDER" "${{ env.DB_SECRET}}" db-deployment.yaml
+          cat db-deployment.yaml
           kubectl apply -f .
           kubectl wait deployment -n default db-deployment --for=condition=available --timeout=90s
              
