@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: relay-deployment
+  labels:
+    app: relay
+spec:
+  selector:
+    matchLabels:
+      app: relay
+      tier: backend
+      track: stable
+  replicas: 1
+  strategy: Recreate
+  template:
+    metadata:
+      labels:
+        app: relay
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: relay
+          image: "IMGPLACEHOLDER"
+          env:
+          - name: SERVERHOST
+            value: '0.0.0.0'
+          - name: SERVERPORT
+            value: '433'
+          - name: DBPASSWORD
+            value: DBPWPLACEHOLDER
+          - name: KUBECONFIGPATH
+            value: '/app/config/config'
+          - name: DBUSER
+            value: 'postgres'
+          - name: DBNAME
+            value: 'userdb'
+          - name: DBPORT
+            value: '5444'
+          - name: DBHOST
+            value: db_service
+          command: ["serve"]
+          ports:
+          - containerPort: 433

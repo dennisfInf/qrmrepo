@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dbprep-service
+spec:
+  selector:
+    app: dbprep
+  ports:
+    - protocol: TCP
+      port: 435
+      targetPort: 436
