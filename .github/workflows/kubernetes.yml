@@ -58,7 +58,7 @@ jobs:
 
     - name: install kubectl
       run: |
-          apt install curl
+          sudo apt install curl
           curl -L -o /usr/bin/kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.22.6/2022-03-09/bin/linux/amd64/kubectl
           chmod +x /usr/bin/kubectl
           echo ${{ secrets.KUBE_CONFIG_DATA }} | base64 -d > kubeconfig
