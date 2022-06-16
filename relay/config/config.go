@@ -1,7 +1,6 @@
 package config
 
 type ServerConfig struct {
-	Host string `env:"SERVERHOST" validate:"required"`
 	Port uint16 `env:"SERVERPORT" validate:"required"`
 }
 

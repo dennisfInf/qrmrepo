@@ -56,7 +56,7 @@ func New(cfg config.ServerConfig, repoManager RepositoryManager) (*Server, error
 func (s *Server) Run() (err error) {
 	s.registerRoutes()
 
-	err = s.echo.Start(fmt.Sprintf("%s:%d", s.cfg.Host, s.cfg.Port))
+	err = s.echo.Start(fmt.Sprintf(":%d", s.cfg.Port))
 	if err == http.ErrServerClosed {
 		err = nil
 	}
