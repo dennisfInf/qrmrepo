@@ -4,7 +4,7 @@ metadata:
   name: db-service
 spec:
   selector:
-    app: relay
+    app: db
   ports:
     - protocol: TCP
       port: 5444
