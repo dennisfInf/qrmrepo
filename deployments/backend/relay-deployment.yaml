@@ -22,14 +22,10 @@ spec:
         - name: relay
           image: "IMGPLACEHOLDER"
           env:
-          - name: SERVERHOST
-            value: '0.0.0.0'
           - name: SERVERPORT
             value: '433'
           - name: DBPASSWORD
             value: 'DBPWPLACEHOLDER'
-          - name: KUBECONFIGPATH
-            value: '/app/kubeconfig'
           - name: DBUSER
             value: 'postgres'
           - name: DBNAME
