@@ -16,3 +16,4 @@ COPY --from=build-env --chown=nonroot:nonroot \
 USER nonroot:nonroot
 
 ENTRYPOINT [ "/app/relay" ]
+CMD [ "serve" ]
