@@ -38,7 +38,6 @@ spec:
             value: '5444'
           - name: DBHOST
             value: db_service
-          args:
-          - "serve"
+          command: ['/app/relay', 'serve']
           ports:
           - containerPort: 433
