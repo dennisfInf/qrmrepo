@@ -30,6 +30,36 @@ func NewGethHandler(cfg config.InfuraConfig) (*InfuraHandler, error) {
 	}, nil
 }
 
+func (w *InfuraHandler) GetWalletAddress() echo.HandlerFunc {
+	type input struct {
+		PublicKeyX big.Int `json:"public_key_x"`
+		PublicKeyY big.Int `json:"public_key_y"`
+	}
+
+	type output struct {
+		Address string `json:"address"`
+	}
+
+	return func(c echo.Context) error {
+		var in input
+		if err := c.Bind(&in); err != nil {
+			return c.String(http.StatusBadRequest, "invalid json")
+		}
+
+		pubkey := ecdsa.PublicKey{
+			Curve: secp256k1.S256(),
+			X:     &in.PublicKeyX,
+			Y:     &in.PublicKeyY,
+		}
+
+		address := crypto.PubkeyToAddress(pubkey)
+
+		return c.JSON(http.StatusOK, output{
+			Address: address.String(),
+		})
+	}
+}
+
 func (w *InfuraHandler) PrepareTransaction() echo.HandlerFunc {
 	type input struct {
 		PublicKeyX big.Int `json:"public_key_x"`

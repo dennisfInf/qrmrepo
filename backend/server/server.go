@@ -32,7 +32,7 @@ func (s *Server) Run() (err error) {
 		return
 	}
 
-	err = s.echo.Start(fmt.Sprintf("%s:%d", s.cfg.Host, s.cfg.Port))
+	err = s.echo.Start(fmt.Sprintf(":%d", s.cfg.Port))
 	if err == http.ErrServerClosed {
 		err = nil
 	}
