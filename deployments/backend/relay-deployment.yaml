@@ -21,9 +21,6 @@ spec:
       containers:
         - name: relay
           image: "IMGPLACEHOLDER"
-          volumeMounts:
-          - name: "config"
-            mountPath: "/app/kubeconfig"
           env:
           - name: SERVERHOST
             value: '0.0.0.0'
@@ -44,7 +41,3 @@ spec:
           command: ["relay","serve"]
           ports:
           - containerPort: 433
-      volumes:
-        - name: "config"
-          configMap:
-            name: "config"

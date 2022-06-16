@@ -21,9 +21,6 @@ spec:
       containers:
         - name: dbprep
           image: "IMGPLACEHOLDER"
-          volumeMounts:
-          - name: "config"
-            mountPath: "/app/kubeconfig"
           env:
           - name: SERVERHOST
             value: '0.0.0.0'
@@ -44,7 +41,3 @@ spec:
           command: ["relay","setup"]
           ports:
           - containerPort: 436
-      volumes:
-        - name: "config"
-          configMap:
-            name: "config"
