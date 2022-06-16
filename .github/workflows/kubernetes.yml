@@ -58,8 +58,9 @@ jobs:
 
     - name: install kubectl
       run: |
-          curl -L -o /usr/bin/kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.22.6/2022-03-09/bin/linux/amd64/kubectl
-          chmod +x /usr/bin/kubectl
+          curl -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.22.6/2022-03-09/bin/linux/amd64/kubectl
+          chmod +x ./kubectl
+          mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
           cat ${{ secrets.KUBE_CONFIG_DATA }} | base64 -d > kubeconfig
           export KUBECONFIG=kubeconfig
           kubectl create secret docker-registry regcred \
@@ -84,6 +85,7 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       working-directory: ./deployments/backend
       run: |
+          kubectl create configmap config --from-file kubeconfig
           kubectl apply -f dbprep-service.yaml
           sed 's/# DBPWPLACEHOLDER/${{ env.DB_SECRET}}/' dbprep-deployment.yaml
           sed 's/# IMGPLACEHOLDER/${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}/' dbprep-deployment.yaml
@@ -105,9 +107,8 @@ jobs:
       env: 
         DB_SECRET: ${{ secrets.DB_SECRET }}
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-      working-directory: ./deployments
+      working-directory: ./deployments/frontend
       run: |
-          kubectl apply -f frontend-service.yaml
           sed 's/# IMGPLACEHOLDER/${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }}/' frontend-deployment.yaml
-          kubectl apply -f frontend-deployment.yaml
+          kubectl apply -f .
 
