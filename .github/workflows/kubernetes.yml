@@ -75,6 +75,8 @@ jobs:
        DB_SECRET: ${{ secrets.DB_SECRET }}
       working-directory: ./deployments/db
       run: |
+          echo kubeconfig
+          export KUBECONFIG=kubeconfig
           sed 's/# DBPWPLACEHOLDER/${{ env.DB_SECRET}}/' db-deployment.yaml
           kubectl apply -f .
           kubectl wait --for=condition=available --timout=60s --all deployments
