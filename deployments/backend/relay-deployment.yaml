@@ -41,8 +41,7 @@ spec:
             value: '5444'
           - name: DBHOST
             value: db_service
-          args:
-          - serve
+          args: ["serve"]
           ports:
           - containerPort: 433
       volumes:
