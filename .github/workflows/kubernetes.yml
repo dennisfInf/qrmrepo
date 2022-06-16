@@ -84,7 +84,7 @@ jobs:
           export KUBECONFIG=kubeconfig
           sed 's/DBPWPLACEHOLDER/${{ env.DB_SECRET}}/' db-deployment.yaml
           kubectl apply -f .
-          kubectl wait --for=condition=available --timeout=180s --all deployments
+          kubectl wait deployment -n default db-deployment  --for=condition=available --timeout=90s
              
 
     - name: push dbprep to kubernetes cluster
@@ -113,7 +113,7 @@ jobs:
           sed 's/DBPWPLACEHOLDER/${{ env.DB_SECRET}}/' relay-deployment.yaml
           sed 's/IMGPLACEHOLDER/${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}/' relay-deployment.yaml
           kubectl apply -f relay-deployment.yaml
-          kubectl wait --for=condition=available --timeout=180s --all deployments
+          kubectl wait deployment -n default relay-deployment --for=condition=available --timeout=90s
 
     - name: push frontend to kubernetes cluster
       env: 
