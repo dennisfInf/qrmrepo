@@ -46,13 +46,14 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG_DATA }}" > kubeconfig
           export KUBECONFIG=kubeconfig
           kubectl create secret docker-registry regcred \
-             --save-config\
-             --dry-run=client\
+             --save-config \
+             --dry-run=client \
              --docker-server=$ECR_REGISTRY \
              --docker-username=AWS \
              --docker-password=$(aws ecr get-login-password)\
              -o yaml | \
           kubectl apply -f -
+          kubectl get pods -o wide
        
     - name: Push frontend docker image to ECR
       id: build-image
@@ -79,9 +80,9 @@ jobs:
        DB_SECRET: ${{ secrets.DB_SECRET }}
       working-directory: ./deployments/db
       run: |
-          echo kubeconfig
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" > kubeconfig
           export KUBECONFIG=kubeconfig
-          sed 's/# DBPWPLACEHOLDER/${{ env.DB_SECRET}}/' db-deployment.yaml
+          sed 's/DBPWPLACEHOLDER/${{ env.DB_SECRET}}/' db-deployment.yaml
           kubectl apply -f .
           kubectl wait --for=condition=available --timout=60s --all deployments
              
@@ -92,10 +93,12 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       working-directory: ./deployments/backend
       run: |
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" > kubeconfig
+          export KUBECONFIG=kubeconfig
           kubectl create configmap config --from-file kubeconfig
           kubectl apply -f dbprep-service.yaml
-          sed 's/# DBPWPLACEHOLDER/${{ env.DB_SECRET}}/' dbprep-deployment.yaml
-          sed 's/# IMGPLACEHOLDER/${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}/' dbprep-deployment.yaml
+          sed 's/DBPWPLACEHOLDER/${{ env.DB_SECRET}}/' dbprep-deployment.yaml
+          sed 's/IMGPLACEHOLDER/${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}/' dbprep-deployment.yaml
           kubectl apply -f dbprep-deployment.yaml
 
     - name: push relay to kubernetes cluster
@@ -104,9 +107,11 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       working-directory: ./deployments/backend
       run: |
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" > kubeconfig
+          export KUBECONFIG=kubeconfig
           kubectl apply -f relay-service.yaml
-          sed 's/# DBPWPLACEHOLDER/${{ env.DB_SECRET}}/' relay-deployment.yaml
-          sed 's/# IMGPLACEHOLDER/${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}/' relay-deployment.yaml
+          sed 's/DBPWPLACEHOLDER/${{ env.DB_SECRET}}/' relay-deployment.yaml
+          sed 's/IMGPLACEHOLDER/${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}/' relay-deployment.yaml
           kubectl apply -f relay-deployment.yaml
           kubectl wait --for=condition=available --timout=60s --all deployments
 
@@ -116,5 +121,7 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       working-directory: ./deployments/frontend
       run: |
-          sed 's/# IMGPLACEHOLDER/${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }}/' frontend-deployment.yaml
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" > kubeconfig
+          export KUBECONFIG=kubeconfig
+          sed 's/IMGPLACEHOLDER/${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }}/' frontend-deployment.yaml
           kubectl apply -f .
