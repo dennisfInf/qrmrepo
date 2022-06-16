@@ -26,9 +26,9 @@ spec:
                mountPath: /var/lib/postgresql/
           env:
           - name: POSTGRES_PASSWORD
-            value: 'DBPWPLACEHOLDER'
+            value: "DBPWPLACEHOLDER"
           - name: POSTGRES_USER
-            value: '433'
+            value: 'postgres'
           - name: POSTGRES_DB
             value: 'userdb'
           ports:
