@@ -23,6 +23,6 @@ spec:
           image: "IMGPLACEHOLDER"
           env:
           - name: API_URL
-            value: relay_service
+            value: relay-service
           ports:
           - containerPort: 8080
