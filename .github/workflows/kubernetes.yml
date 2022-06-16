@@ -83,7 +83,7 @@ jobs:
           sudo apt-get install rpl
           echo "${{ secrets.KUBE_CONFIG_DATA }}" > kubeconfig
           export KUBECONFIG=kubeconfig
-          rpl DBPWPLACEHOLDER ${{ env.DB_SECRET}} db-deployment.yaml
+          rpl "DBPWPLACEHOLDER" "${{ env.DB_SECRET}}" db-deployment.yaml
           kubectl apply -f .
           kubectl wait deployment -n default db-deployment --for=condition=available --timeout=90s
              
@@ -98,8 +98,8 @@ jobs:
           export KUBECONFIG=kubeconfig
           kubectl create configmap config --from-file kubeconfig
           kubectl apply -f dbprep-service.yaml
-          rpl DBPWPLACEHOLDER ${{ env.DB_SECRET}} dbprep-deployment.yaml
-          rpl IMGPLACEHOLDER "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }}" dbprep-deployment.yaml
+          rpl "DBPWPLACEHOLDER" "${{ env.DB_SECRET}}" dbprep-deployment.yaml
+          rpl "IMGPLACEHOLDER" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }}" dbprep-deployment.yaml
           kubectl apply -f dbprep-deployment.yaml
 
     - name: push relay to kubernetes cluster
@@ -111,8 +111,8 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG_DATA }}" > kubeconfig
           export KUBECONFIG=kubeconfig
           kubectl apply -f relay-service.yaml
-          rpl DBPWPLACEHOLDER ${{ env.DB_SECRET}} relay-deployment.yaml
-          rpl IMGPLACEHOLDER "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }}" relay-deployment.yaml
+          rpl "DBPWPLACEHOLDER" "${{ env.DB_SECRET}}" relay-deployment.yaml
+          rpl "IMGPLACEHOLDER" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }}" relay-deployment.yaml
           kubectl apply -f relay-deployment.yaml
           kubectl wait deployment -n default relay-deployment --for=condition=available --timeout=90s
 
@@ -124,5 +124,5 @@ jobs:
       run: |
           echo "${{ secrets.KUBE_CONFIG_DATA }}" > kubeconfig
           export KUBECONFIG=kubeconfig
-          rpl IMGPLACEHOLDER "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }}" frontend-deployment.yaml
+          rpl "IMGPLACEHOLDER" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }}" frontend-deployment.yaml
           kubectl apply -f .
