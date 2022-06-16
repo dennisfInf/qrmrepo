@@ -1,26 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dbprep-deployment
+  name: relay-deployment
   labels:
-    app: dbprep
+    app: relay
 spec:
   selector:
     matchLabels:
-      app: dbprep
+      app: relay
       tier: backend
       track: stable
   replicas: 1
-  strategy: Recreate
   template:
     metadata:
       labels:
-        app: dbprep
+        app: relay
         tier: backend
         track: stable
     spec:
       containers:
-        - name: dbprep
+        - name: relay
           image: "IMGPLACEHOLDER"
           env:
           - name: SERVERHOST
@@ -39,6 +38,6 @@ spec:
             value: '5444'
           - name: DBHOST
             value: db_service
-          command: ["setup"]
+          command: ["serve"]
           ports:
-          - containerPort: 436
+          - containerPort: 433

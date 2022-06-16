@@ -61,34 +61,53 @@ jobs:
           pip install awscli
           curl -L -o /usr/bin/kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.22.6/2022-03-09/bin/linux/amd64/kubectl
           chmod +x /usr/bin/kubectl
-          echo ${{ secrets.KUBE_CONFIG_DATA }} | base64 -d > kubeconfig
+          cat ${{ secrets.KUBE_CONFIG_DATA }} | base64 -d > kubeconfig
           export KUBECONFIG=kubeconfig
-
-    - name: push deployment to kubernetes cluster
-      env: 
-        DB_SECRET: ${{ secrets.DB_SECRET }}
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-      working-directory: ./deployments
-      run: |
           kubectl create secret docker-registry regcred \
              --docker-server=$ECR_REGISTRY \
              --docker-username=AWS \
              --docker-password=$(aws ecr get-login-password) \
              --namespace=health-check
-          kubectl apply -f db-service.yaml
+  
+     - name: push db to kubernetes cluster
+      env: 
+        DB_SECRET: ${{ secrets.DB_SECRET }}
+      working-directory: ./deployments/db
+      run: |
           sed 's/# DBPWPLACEHOLDER/${{ env.DB_SECRET}}/' db-deployment.yaml
-          kubectl apply -f db-deployment.yaml
+          kubectl apply -f .
+          kubectl wait --for=condition=available --timout=60s --all deployments
+
+
+     - name: push dbprep to kubernetes cluster
+      env: 
+        DB_SECRET: ${{ secrets.DB_SECRET }}
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      working-directory: ./deployments/backend
+      run: |
           kubectl apply -f dbprep-service.yaml
-          kubectl wait --for=condition=available --timout=60s --all deployments
-          sed 's/# DBPWPLACEHOLDER/${{ env.DB_SECRET}}/' bprep-deployment.yaml
-          sed 's/# IMGPLACEHOLDER/${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}/' bprep-deployment.yaml
+          sed 's/# DBPWPLACEHOLDER/${{ env.DB_SECRET}}/' dbprep-deployment.yaml
+          sed 's/# IMGPLACEHOLDER/${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}/' dbprep-deployment.yaml
           kubectl apply -f dbprep-deployment.yaml
-          kubectl wait --for=condition=available --timout=60s --all deployments
+
+     - name: push relay to kubernetes cluster
+      env: 
+        DB_SECRET: ${{ secrets.DB_SECRET }}
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      working-directory: ./deployments/backend
+      run: |
           kubectl apply -f relay-service.yaml
           sed 's/# DBPWPLACEHOLDER/${{ env.DB_SECRET}}/' relay-deployment.yaml
           sed 's/# IMGPLACEHOLDER/${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}/' relay-deployment.yaml
           kubectl apply -f relay-deployment.yaml
           kubectl wait --for=condition=available --timout=60s --all deployments
+
+    - name: push frontend to kubernetes cluster
+      env: 
+        DB_SECRET: ${{ secrets.DB_SECRET }}
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      working-directory: ./deployments
+      run: |
           kubectl apply -f frontend-service.yaml
           sed 's/# IMGPLACEHOLDER/${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }}/' frontend-deployment.yaml
           kubectl apply -f frontend-deployment.yaml

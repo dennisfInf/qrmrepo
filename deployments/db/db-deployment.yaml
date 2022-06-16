@@ -11,7 +11,6 @@ spec:
       tier: backend
       track: stable
   replicas: 1
-  strategy: Recreate
   template:
     metadata:
       labels:
@@ -23,8 +22,8 @@ spec:
         - name: db
           image: 'public.ecr.aws/ubuntu/postgres:12-20.04_beta'
           volumeMounts:
-             - mountPath: /var/lib/postgresql/data
-               name: db-volume
+             - name: db-volume
+               mountPath: /var/lib/postgresql/
           env:
           - name: POSTGRES_PASSWORD
             value: DBPWPLACEHOLDER
@@ -34,9 +33,7 @@ spec:
             value: 'userdb'
           ports:
           - containerPort: 5432
-          volumes:
-          - name: test-volume
-            # This AWS EBS volume must already exist.
-            awsElasticBlockStore:
-              volumeID: "vol-07c8f57fd91cb3b7f"
-              fsType: ext4
+      volumes:
+      - name: db-volume
+        persistentVolumeClaim:
+          claimName: postgress-ebs-claim

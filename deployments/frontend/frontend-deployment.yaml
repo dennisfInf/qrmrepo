@@ -11,7 +11,6 @@ spec:
       tier: frontend
       track: stable
   replicas: 1
-  strategy: Recreate
   template:
     metadata:
       labels:
