@@ -46,9 +46,13 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG_DATA }}" > kubeconfig
           export KUBECONFIG=kubeconfig
           kubectl create secret docker-registry regcred \
+             --save-config\
+             --dry-run=client\
              --docker-server=$ECR_REGISTRY \
              --docker-username=AWS \
-             --docker-password=$(aws ecr get-login-password)
+             --docker-password=$(aws ecr get-login-password)\
+             -o yaml | \
+          kubectl apply -f -
        
     - name: Push frontend docker image to ECR
       id: build-image
