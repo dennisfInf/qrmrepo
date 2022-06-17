@@ -8,10 +8,10 @@ func (s *Server) registerRoutes() {
 	proxy := handlers.ProxyHandler{}
 
 	register := s.echo.Group("/register", s.UserAddressMapper())
-	register.POST("/initialize", proxy.Proxy)
+	register.GET("/initialize", proxy.Proxy)
 	register.POST("/finalize", proxy.Proxy)
 
 	login := s.echo.Group("/login", s.UserAddressMapper())
-	login.POST("/initialize", proxy.Proxy)
+	login.GET("/initialize", proxy.Proxy)
 	login.POST("/finalize", proxy.Proxy)
 }
