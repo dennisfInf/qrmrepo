@@ -1,7 +1,8 @@
 package config
 
 type ServerConfig struct {
-	Port uint16 `env:"SERVERPORT" validate:"required"`
+	Port  uint16 `env:"SERVERPORT" validate:"required"`
+	Image string `env:"IMAGENAME" validate:"required"`
 }
 
 type PostgresConfig struct {

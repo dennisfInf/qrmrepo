@@ -2,12 +2,14 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"github.com/enclaive/relay/models"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog/log"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"net/http"
 )
 
@@ -47,53 +49,93 @@ func (s *Server) UserAddressMapper() echo.MiddlewareFunc {
 }
 
 func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
-	deploymentsClient := s.clientset.AppsV1().Deployments("enclave-ns")
+	appDeploymentsClient := s.clientset.AppsV1().Deployments("enclave-ns")
 
-	//TODO replace with real deployment
-	deployment := &appsv1.Deployment{
+	appDeployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
-				"app": "ubuntu",
+				"app": "enclave",
 			},
-			Name: "ubuntu",
+			GenerateName: "enclave-",
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: int32Ptr(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": "ubuntu",
+					"app":   "enclave",
+					"tier":  "backend",
+					"track": "stable",
 				},
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"app": "ubuntu",
+						"app":   "enclave",
+						"tier":  "backend",
+						"track": "stable",
 					},
 				},
 				Spec: apiv1.PodSpec{
 					Containers: []apiv1.Container{
 						{
-							Name:    "ubuntu",
-							Image:   "ubuntu",
-							Command: []string{"/bin/sleep", "3650d"},
+							Name:  "enclave",
+							Image: s.cfg.Image,
+							Ports: []apiv1.ContainerPort{
+								{
+									ContainerPort: 2533,
+								},
+							},
 						},
+					},
+					NodeSelector: map[string]string{
+						"disktype": "ssd",
 					},
 				},
 			},
 		},
 	}
 
-	result, err := deploymentsClient.Create(ctx, deployment, metav1.CreateOptions{})
+	appResult, err := appDeploymentsClient.Create(ctx, appDeployment, metav1.CreateOptions{})
 	if err != nil {
 		return "", err
 	}
 
-	pod, err := s.clientset.CoreV1().Pods("enclave-ns").Get(ctx, result.GetObjectMeta().GetName(), metav1.GetOptions{})
+	serviceDeploymentsClient := s.clientset.CoreV1().Services("enclave-ns")
+
+	serviceDeployment := &apiv1.Service{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Service",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("%s-service", appResult.Name),
+			Namespace: "enclave-ns",
+		},
+		Spec: apiv1.ServiceSpec{
+			Selector: map[string]string{
+				"app": appResult.Name,
+			},
+			Ports: []apiv1.ServicePort{
+				{
+					Protocol:   "TCP",
+					Port:       2534,
+					TargetPort: intstr.FromInt(2533),
+				},
+			},
+		},
+	}
+
+	serviceResult, err := serviceDeploymentsClient.Create(ctx, serviceDeployment, metav1.CreateOptions{})
 	if err != nil {
 		return "", err
 	}
 
-	return pod.Status.PodIP, nil
+	service, err := s.clientset.CoreV1().Services("enclave-ns").Get(ctx, serviceResult.GetObjectMeta().GetName(), metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%s:%d", service.Spec.ClusterIP, service.Spec.Ports[0].Port), nil
 }
 
 func int32Ptr(i int32) *int32 { return &i }

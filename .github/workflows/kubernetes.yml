@@ -75,6 +75,17 @@ jobs:
           docker push  ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}
           echo "::set-output name=image::${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}"
 
+    
+    - name: Push enclave docker image to ECR
+      id: build-enclave
+      working-directory: ./enclavedummy
+      env: 
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+          docker build -t ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:encl${{ env.IMAGE_TAG }} .
+          docker push  ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:encl${{ env.IMAGE_TAG }}
+          echo "::set-output name=image::${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:encl${{ env.IMAGE_TAG }}"
+
     - name: Push db to kubernetes cluster
       env: 
        DB_SECRET: ${{ secrets.DB_SECRET }}
@@ -85,8 +96,7 @@ jobs:
           export KUBECONFIG=kubeconfig
           rpl "DBPWPLACEHOLDER" "${{ env.DB_SECRET}}" db-deployment.yaml
           kubectl apply -f .
-          kubectl wait deployment -n default db-deployment --for=condition=available --timeout=180s
-             
+          kubectl wait deployment -n default db-deployment --for=condition=available --timeout=180s          
 
     - name: push dbprep to kubernetes cluster
       env: 
@@ -97,6 +107,7 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG_DATA }}" > kubeconfig
           export KUBECONFIG=kubeconfig
           kubectl apply -f dbprep-service.yaml
+          rpl "ENCIMAGE" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:encl${{ env.IMAGE_TAG }}" dbprep-deployment.yaml
           rpl "DBPWPLACEHOLDER" "${{ env.DB_SECRET}}" dbprep-deployment.yaml
           rpl "IMGPLACEHOLDER" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}" dbprep-deployment.yaml
           kubectl apply -f dbprep-deployment.yaml
@@ -110,6 +121,7 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG_DATA }}" > kubeconfig
           export KUBECONFIG=kubeconfig
           kubectl apply -f relay-service.yaml
+          rpl "ENCIMAGE" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:encl${{ env.IMAGE_TAG }}" relay-deployment.yaml
           rpl "DBPWPLACEHOLDER" "${{ env.DB_SECRET}}" relay-deployment.yaml
           rpl "IMGPLACEHOLDER" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}" relay-deployment.yaml
           kubectl apply -f relay-deployment.yaml
