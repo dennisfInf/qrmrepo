@@ -30,22 +30,17 @@ export class RegisterCardComponent implements OnInit {
   }
 
   async register() {
-    this.fidoService.createDefaultCredential("challenge", this.username, this.userId, this.name).then(res => {
-      console.log(res)
-      this.credential = res as PublicKeyCredential
-    })
-    // this.authService.registerInitialize(this.username, this.name)
-    //   .then(res => {
-    //     let jsonObj = JSON.parse(res)
-    //     this.userId = jsonObj.user.id
-    //     let challenge = jsonObj.challenge
-    //     this.fidoService.createCredential(challenge, this.username, this.userId, this.name).then(res => {
-    //       this.authService.registerFinalize(this.username, res).then(res => {
-    //         // this.router
-    //         console.log(res)
-    //       })
-    //     })
-    //   })
+    this.authService.registerInitialize(this.username, this.name)
+      .then(res => {
+        let jsonObj = JSON.parse(res)
+        this.userId = jsonObj.user.id
+        let challenge = jsonObj.challenge
+        this.fidoService.createCredential(challenge, this.username, this.userId, this.name).then(res => {
+          this.authService.registerFinalize(this.username, res).then(res => {
+            console.log(res)
+          })
+        })
+      })
   }
 
   displayError(message: string): void {
@@ -53,13 +48,22 @@ export class RegisterCardComponent implements OnInit {
   }
 
   async login() {
-    if (this.credential != null) {
-      this.fidoService.getCredential("test", this.credential.rawId).then(res => {
-        this.error = res
+    this.authService.loginInitialize(this.username)
+      .then(res => {
+        let jsonObj = JSON.parse(res)
+        let userId = jsonObj.user.id as BufferSource
+        let challenge = jsonObj.challenge
+        this.fidoService.getCredential(challenge, userId).then(res => {
+          this.authService.loginFinalize(this.username, res).then(res => {
+
+            let token = ""
+            if (this.authService.login(token)) {
+             this.router.navigate(["/dashboard"])
+            }
+
+          })
+        })
       })
-    } else {
-      this.error = "credential is null"
-    }
   }
 
 

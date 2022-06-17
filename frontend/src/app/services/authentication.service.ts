@@ -1,14 +1,14 @@
 import {Injectable} from '@angular/core';
 import axios from "axios";
 import {environment} from "../../environments/environment";
-import * as moment from "moment";
 import {JwtHelperService} from "@auth0/angular-jwt";
 @Injectable({
   providedIn: 'root'
 })
 export class AuthenticationService {
-
-  constructor(private jwtHelper : JwtHelperService) {
+  private jwtHelper : JwtHelperService
+  constructor() {
+    this.jwtHelper = new JwtHelperService()
   }
 
   async challenge(): Promise<string> {
@@ -67,48 +67,21 @@ export class AuthenticationService {
     )
   }
 
-  public isLoggedIn() {
-    return moment().isBefore(this.getExpiration());
-  }
-
-  getUserId(): string {
-    return ""
-  }
-
-  getRole(): string {
-    return ""
-  }
-
-  getToken(): string {
-    return ""
-  }
-
-  private setSession(authResult : any) {
-    const expiresAt = moment().add(authResult.expiresIn,'second');
-
-    localStorage.setItem('id_token', authResult.idToken);
-    localStorage.setItem("expires_at", JSON.stringify(expiresAt.valueOf()) );
-  }
-
-  logout() {
-    localStorage.removeItem("id_token");
-    localStorage.removeItem("expires_at");
-  }
-
-
-  isLoggedOut() {
-    return !this.isLoggedIn();
-  }
-
-  getExpiration() {
-    const expiration = localStorage.getItem("expires_at");
-    let expiresAt = ""
-    if (expiration != null) {
-       expiresAt = JSON.parse(expiration);
-
+  public isAuthenticated(): boolean {
+    const token = localStorage.getItem('token');
+    if (token == null){
+      return false
     }
-    return moment(expiresAt);
+    return !this.jwtHelper.isTokenExpired(token);
   }
+
+  public login(token : string) : boolean {
+    localStorage.setItem("token", token)
+    return true
+  }
+
+
+
 
 }
 

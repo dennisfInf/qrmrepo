@@ -6,9 +6,9 @@ import {DevelpersComponent} from "./pages/about/develpers/develpers.component";
 import {UsersComponent} from "./pages/about/users/users.component";
 import {ProjectComponent} from "./pages/about/project/project.component";
 import {RegisterComponent} from "./pages/register/register.component";
-import {Parser} from "@angular/compiler";
 import {PaymentComponent} from "./pages/payment/payment.component";
 import {DashboardModule} from "./dashboard/dashboard.module";
+import {AuthGuardService} from "./services/auth-guard.service";
 
 
 const routes: Routes = [
@@ -18,7 +18,8 @@ const routes: Routes = [
   },
   {
     path: "dashboard",
-    loadChildren: () => DashboardModule
+    loadChildren: () => DashboardModule,
+    canActivate : [AuthGuardService]
   },
   {
     path: "",
