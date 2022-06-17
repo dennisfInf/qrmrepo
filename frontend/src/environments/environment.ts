@@ -20,9 +20,9 @@ export const environment = {
       credProps: false,
       uvm: false,
     },
-    pubKeyCredParams : [ {type: "public-key", alg: -7}],
+    pubKeyCredParams : [ ],
     rp : {
-      domain: "localhost",
+      domain: "localhost:4200",
       name: "elon mask"
     },
     timeout: 60000,

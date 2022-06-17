@@ -14,13 +14,14 @@ export class FidoService {
     let credential = navigator.credentials.create({publicKey: creationOptions})
     return credential
   }
+
   async createCredential(challenge: string, displayName: string, userId: string, name: string): Promise<Credential | null> {
     let creationOptions = this.readPublicKeyCredentialCreationOptions(challenge, displayName, userId, name)
     let credential = navigator.credentials.create({publicKey: creationOptions})
     return credential
   }
 
-  private readPublicKeyCredentialCreationOptions(challenge: string, displayName: string, userId: string, name: string): PublicKeyCredentialCreationOptions{
+  private readPublicKeyCredentialCreationOptions(challenge: string, displayName: string, userId: string, name: string): PublicKeyCredentialCreationOptions {
     let publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
       attestation: this.readAttestation(),
       authenticatorSelection: this.readAuthenticatorSelection(),
@@ -34,6 +35,7 @@ export class FidoService {
     }
     return publicKeyCredentialCreationOptions
   }
+
   private createPublicKeyCredentialCreationOptions(challenge: string, displayName: string, userId: string, name: string): PublicKeyCredentialCreationOptions {
     let publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
       attestation: undefined,
@@ -48,6 +50,7 @@ export class FidoService {
     }
     return publicKeyCredentialCreationOptions
   }
+
   private createUser(displayName: string, userId: string, name: string): PublicKeyCredentialUserEntity {
     let publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
       displayName: displayName,
@@ -56,6 +59,30 @@ export class FidoService {
     }
     return publicKeyCredentialUserEntity
   }
+
+  public async getCredential(challenge: string, id: BufferSource) {
+    let credential: PublicKeyCredential | null = null
+    const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions = {
+      challenge: Uint8Array.from(
+        challenge, c => c.charCodeAt(0)
+      ),
+      timeout: 60000,
+      allowCredentials: [{
+        id: id ,
+        type: "public-key",
+      }],
+      userVerification: "required"
+    }
+
+    const cred = await navigator.credentials.get({
+      publicKey: publicKeyCredentialRequestOptions
+    });
+    if (cred == null){
+      return "null"
+    }
+    return cred
+  }
+
   private readAuthenticatorSelection(): AuthenticatorSelectionCriteria {
     let authenticatorSelection: AuthenticatorSelectionCriteria = {
       authenticatorAttachment: this.readAuthenticatorAttachment(),
@@ -65,36 +92,43 @@ export class FidoService {
     }
     return authenticatorSelection
   }
-  private readTimeout() : number {
-    let timeout : number
-    timeout = <number> environment.fido.timeout
+
+  private readTimeout(): number {
+    let timeout: number
+    timeout = <number>environment.fido.timeout
     return timeout
   }
+
   private readAuthenticatorAttachment(): AuthenticatorAttachment {
     let authenticatorAttachment: AuthenticatorAttachment
     authenticatorAttachment = <AuthenticatorAttachment>environment.fido.authenticatorSelection.authenticatorAttachment
     return authenticatorAttachment
   }
+
   private readAttestation(): AttestationConveyancePreference {
     let attestation: AttestationConveyancePreference
     attestation = <AttestationConveyancePreference> environment.fido.attestation
     return attestation
   }
+
   private readRequireResidentKey(): boolean {
     let requireResidentKey: boolean
     requireResidentKey = environment.fido.authenticatorSelection.requireResidentKey
     return requireResidentKey
   }
+
   private readResidentKey(): ResidentKeyRequirement {
     let residentKey: ResidentKeyRequirement
     residentKey = <ResidentKeyRequirement>environment.fido.authenticatorSelection.residentKey
     return residentKey
   }
+
   private readUserVerification(): UserVerificationRequirement {
     let userVerification: UserVerificationRequirement
     userVerification = <UserVerificationRequirement>environment.fido.authenticatorSelection.userVerification
     return userVerification
   }
+
   private readExtensions(): AuthenticationExtensionsClientInputs {
     let authenticationExtensionsClientInputs: AuthenticationExtensionsClientInputs
     authenticationExtensionsClientInputs = {
@@ -105,19 +139,22 @@ export class FidoService {
     }
     return authenticationExtensionsClientInputs
   }
-  private readExcludeCredentials() : PublicKeyCredentialDescriptor[]{
-    let excludeCredentials : PublicKeyCredentialDescriptor[]
-    excludeCredentials = <PublicKeyCredentialDescriptor[]> environment.fido.excludeCredentials
+
+  private readExcludeCredentials(): PublicKeyCredentialDescriptor[] {
+    let excludeCredentials: PublicKeyCredentialDescriptor[]
+    excludeCredentials = <PublicKeyCredentialDescriptor[]>environment.fido.excludeCredentials
     return excludeCredentials
   }
-  private readRp() : PublicKeyCredentialRpEntity{
-    let rp : PublicKeyCredentialRpEntity
-    rp = <PublicKeyCredentialRpEntity> environment.fido.rp
+
+  private readRp(): PublicKeyCredentialRpEntity {
+    let rp: PublicKeyCredentialRpEntity
+    rp = <PublicKeyCredentialRpEntity>environment.fido.rp
     return rp
   }
-  private readPubKeyCredParams() : PublicKeyCredentialParameters[] {
-    let pubKeyCredParams : PublicKeyCredentialParameters[]
-    pubKeyCredParams = <PublicKeyCredentialParameters[]> environment.fido.pubKeyCredParams
+
+  private readPubKeyCredParams(): PublicKeyCredentialParameters[] {
+    let pubKeyCredParams: PublicKeyCredentialParameters[]
+    pubKeyCredParams = <PublicKeyCredentialParameters[]>environment.fido.pubKeyCredParams
     return pubKeyCredParams
   }
 }

@@ -1,0 +1,35 @@
+<div class="bg-white p-5 rounded-md">
+  <p class="font-bold mb-5">Transaction History</p>
+  <div class="grid grid-cols-4">
+    <div class="col-span-1 border-b-2">
+      <p>Date</p>
+    </div>
+    <div class="col-span-2 border-b-2">
+      <p>Addresses</p>
+    </div>
+    <div class="col-span-1 text-center border-b-2">
+      <p>Amount</p>
+    </div>
+
+    <ng-container class="" *ngFor="let transaction of transactions">
+      <div class="col-span-1 my-3">{{transaction.date}}</div>
+      <div class="col-span-2 my-3">
+        <div class="flex justify-between"><p class="font-bold">From: </p>
+          <p>{{transaction.from}}</p></div>
+        <div class="flex justify-between"><p class="font-bold">To: </p>
+          <p>{{transaction.to}}</p></div>
+      </div>
+      <div class="col-span-1 my-3 text-center">{{transaction.amount}} Eth</div>
+    </ng-container>
+    <ng-container class="" *ngFor="let transaction of transactions">
+      <div class="col-span-1 my-3">{{transaction.date}}</div>
+      <div class="col-span-2 my-3">
+        <div class="flex justify-between"><p class="font-bold">From: </p>
+          <p>{{transaction.from}}</p></div>
+        <div class="flex justify-between"><p class="font-bold">To: </p>
+          <p>{{transaction.to}}</p></div>
+      </div>
+      <div class="col-span-1 my-3 text-center">{{transaction.amount}} Eth</div>
+    </ng-container>
+  </div>
+</div>

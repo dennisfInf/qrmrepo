@@ -16,6 +16,11 @@ import { PageContentComponent } from './pages/about/components/page-content/page
 import { RegisterComponent } from './pages/register/register.component';
 import { RegisterCardComponent } from './pages/register/components/register-card/register-card.component';
 import {FormsModule} from "@angular/forms";
+import { PaymentComponent } from './pages/payment/payment.component';
+
+
+import { TransactionPreviewComponent } from './components/transaction/transaction-preview/transaction-preview.component';
+
 
 @NgModule({
   declarations: [
@@ -31,14 +36,18 @@ import {FormsModule} from "@angular/forms";
     NavigationComponent,
     PageContentComponent,
     RegisterComponent,
-    RegisterCardComponent
+    RegisterCardComponent,
+    PaymentComponent,
+    TransactionPreviewComponent,
   ],
-    imports: [
-        BrowserModule,
-        AppRoutingModule,
-        FormsModule
-    ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    FormsModule
+  ],
   providers: [],
+  exports: [
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

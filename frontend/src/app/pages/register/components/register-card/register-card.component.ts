@@ -11,16 +11,18 @@ import {Router} from "@angular/router";
 })
 export class RegisterCardComponent implements OnInit {
 
-  username: string = ""
-  name: string = ""
+  username: string = "username"
+  name: string = "username"
   showError: boolean = false
-  error: string = ""
+  error: any = ""
   userId: string = "Ich bin eine UserId"
+  credential: PublicKeyCredential | null = null
+
 
   constructor(private fidoService: FidoService,
               private authService: AuthenticationService,
-              private router : Router
-              ) {
+              private router: Router
+  ) {
 
   }
 
@@ -28,22 +30,37 @@ export class RegisterCardComponent implements OnInit {
   }
 
   async register() {
-    this.authService.registerInitialize(this.username, this.name)
-      .then(res => {
-        let jsonObj = JSON.parse(res)
-        this.userId = jsonObj.user.id
-        let challenge = jsonObj.challenge
-        this.fidoService.createCredential(challenge, this.username, this.userId, this.name).then(res => {
-          this.authService.registerFinalize(this.username, res).then(res => {
-            // this.router
-            console.log(res)
-          })
-        })
-      })
+    this.fidoService.createDefaultCredential("challenge", this.username, this.userId, this.name).then(res => {
+      console.log(res)
+      this.credential = res as PublicKeyCredential
+    })
+    // this.authService.registerInitialize(this.username, this.name)
+    //   .then(res => {
+    //     let jsonObj = JSON.parse(res)
+    //     this.userId = jsonObj.user.id
+    //     let challenge = jsonObj.challenge
+    //     this.fidoService.createCredential(challenge, this.username, this.userId, this.name).then(res => {
+    //       this.authService.registerFinalize(this.username, res).then(res => {
+    //         // this.router
+    //         console.log(res)
+    //       })
+    //     })
+    //   })
   }
 
   displayError(message: string): void {
 
   }
+
+  async login() {
+    if (this.credential != null) {
+      this.fidoService.getCredential("test", this.credential.rawId).then(res => {
+        this.error = res
+      })
+    } else {
+      this.error = "credential is null"
+    }
+  }
+
 
 }
