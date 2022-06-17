@@ -5,7 +5,7 @@ ENV CGO_ENABLED=0
 COPY . /app/
 WORKDIR /app/
 
-RUN go build -o relay -ldflags="-extldflags=-static" .
+RUN go build -o enclavedummy -ldflags="-extldflags=-static" .
 
 FROM gcr.io/distroless/static
 
