@@ -22,6 +22,8 @@ spec:
         - name: relay
           image: "IMGPLACEHOLDER"
           env:
+          - name: IMAGENAME
+            value: ENCIMAGE
           - name: SERVERPORT
             value: '2531'
           - name: DBPASSWORD
