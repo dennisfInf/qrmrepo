@@ -1,14 +1,14 @@
 x-aws-vpc: ${AWS_VPC}
 x-aws-cluster: ${AWS_ECS_CLUSTER}
 x-aws-loadbalancer: ${AWS_ELB}
-
+#test
 services:
   backenddb:
-    image: public.ecr.aws/ubuntu/postgres:12-20.04_beta
+    image: 'public.ecr.aws/ubuntu/postgres:12-20.04_beta'
   #  image: postgres
     environment:
       POSTGRES_PASSWORD: '${DB_SECRET}'
-      POSTGRES_USER: '{$DB_USER}'
+      POSTGRES_USER: 'postgres'
       POSTGRES_DB: 'userdb'
     volumes:
       - data:/var/lib/postgresql/data
@@ -16,7 +16,7 @@ services:
       - dbnet
 
   dbprepare:
-    image: $ECR_REGISTRY/$ECR_REPOSITORY:relayP$IMAGE_TAG
+    image: '${ECR_REGISTRY}/${ECR_REPOSITORY}:relay${IMAGE_TAG}'
     #build: ./relay
     depends_on:
       - backenddb
@@ -24,28 +24,33 @@ services:
       SERVERHOST: 'localhost'
       SERVERPORT: '433'
       DBPASSWORD: '${DB_SECRET}'
-      DBUSER: '${DB_USER}'
+      KUBECONFIGPATH: './config/config'
+      DBUSER: 'postgres'
       DBNAME: 'userdb'
       DBPORT: '5432'
       DBHOST: 'backenddb'
     command: setup
+    ports: 
+        - target: 434
+          x-aws-protocol: http
     networks:
       - dbnet
     
   relay:
-    image: $ECR_REGISTRY/$ECR_REPOSITORY:relay$IMAGE_TAG
+    image: '${ECR_REGISTRY}/${ECR_REPOSITORY}:relay${IMAGE_TAG}'
 #    build: ./relay
-    depends_on:
-      - dbprepare
     environment:
       SERVERHOST: 'localhost'
       SERVERPORT: '433'
       DBPASSWORD: '${DB_SECRET}'
-      DBUSER: '${DB_USER}'
+      KUBECONFIGPATH: '/app/config/config'
+      DBUSER: 'postgres'
       DBNAME: 'userdb'
       DBPORT: '5432'
       DBHOST: 'backenddb'
     command: serve
+    depends_on:
+      - backenddb
     networks:
       - dbnet
       - frontbacknet
@@ -54,7 +59,7 @@ services:
         x-aws-protocol: http
   
   frontend: 
-    image: $ECR_REGISTRY/$ECR_REPOSITORY:frontend$IMAGE_TAG
+    image: '${ECR_REGISTRY}/${ECR_REPOSITORY}:frontend${IMAGE_TAG}'
  #   build: ./frontend
     environment:
        API_URL: 'relay'

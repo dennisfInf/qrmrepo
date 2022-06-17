@@ -4,7 +4,6 @@ docker build -t relay .
 ### Prepare database
 docker run -d \
 --name relay \
--e SERVERHOST=replaceme \
 -e SERVERPORT=replaceme \
 -e DBHOST=replaceme \
 -e DBPORT=replaceme \
@@ -16,7 +15,6 @@ relay setup
 ### Run server
 docker run -d \
 --name relay \
--e SERVERHOST=replaceme \
 -e SERVERPORT=replaceme \
 -e DBHOST=replaceme \
 -e DBPORT=replaceme \

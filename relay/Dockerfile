@@ -13,8 +13,7 @@ COPY --from=build-env --chown=nonroot:nonroot \
     /app/relay \
     /app/
 
-EXPOSE 80 443
-
 USER nonroot:nonroot
 
 ENTRYPOINT [ "/app/relay" ]
+CMD [ "serve" ]

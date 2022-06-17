@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  labels:
+    app: nginx
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+      tier: frontend
+      track: stable
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx
+        tier: frontend
+        track: stable
+    spec:
+      containers:
+        - name: nginx
+          image: "IMGPLACEHOLDER"
+          env:
+          - name: API_URL
+            value: relay-service
+          ports:
+          - containerPort: 8080

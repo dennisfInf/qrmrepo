@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: relay-deployment
+  labels:
+    app: relay
+spec:
+  selector:
+    matchLabels:
+      app: relay
+      tier: backend
+      track: stable
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: relay
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: relay
+          image: "IMGPLACEHOLDER"
+          env:
+          - name: SERVERPORT
+            value: '2531'
+          - name: DBPASSWORD
+            value: 'DBPWPLACEHOLDER'
+          - name: DBUSER
+            value: 'postgres'
+          - name: DBNAME
+            value: 'userdb'
+          - name: DBPORT
+            value: '5444'
+          - name: DBHOST
+            value: db-service
+          ports:
+          - containerPort: 2531

@@ -2,26 +2,24 @@ package serve
 
 import (
 	"fmt"
-	"os"
-	"os/signal"
-
-	"github.com/enclaive/relay/config"
-	"github.com/enclaive/relay/persistence"
-	"github.com/enclaive/relay/server"
+	"github.com/enclaive/backend/config"
+	"github.com/enclaive/backend/server"
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/cobra"
+	"os"
+	"os/signal"
 )
 
 func newServeCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "serve",
-		Short: "Start the relay",
+		Short: "Start the backend",
 		Long:  "",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			stop := make(chan os.Signal, 1)
 			signal.Notify(stop, os.Interrupt)
 
-			var cfg config.GlobalConfig
+			var cfg config.Config
 			err := config.FromEnv(&cfg)
 			if err != nil {
 				return err
@@ -32,12 +30,7 @@ func newServeCommand() *cobra.Command {
 				return fmt.Errorf("validation of config failed: %w", err)
 			}
 
-			db := persistence.New(cfg.Postgres)
-
-			s, err := server.New(cfg.Server, db)
-			if err != nil {
-				return fmt.Errorf("failed to create server: %w", err)
-			}
+			s := server.New(cfg)
 			go func() {
 				err := s.Run()
 				if err != nil {

@@ -7,11 +7,11 @@ import (
 func (s *Server) registerRoutes() {
 	proxy := handlers.ProxyHandler{}
 
-	register := s.echo.Group("/register", UserAddressMapper(s.repoManager))
+	register := s.echo.Group("/register", s.UserAddressMapper())
 	register.POST("/initialize", proxy.Proxy)
 	register.POST("/finalize", proxy.Proxy)
 
-	login := s.echo.Group("/login", UserAddressMapper(s.repoManager))
+	login := s.echo.Group("/login", s.UserAddressMapper())
 	login.POST("/initialize", proxy.Proxy)
 	login.POST("/finalize", proxy.Proxy)
 }

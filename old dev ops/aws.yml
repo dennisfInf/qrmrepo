@@ -1,0 +1,95 @@
+name: Deploy to Amazon ECS
+
+on:
+  push:
+    branches:
+      - useKubernetesInstead
+
+env:
+  AWS_REGION: eu-central-1                
+  ECR_REPOSITORY: elon-mask 
+  RUN_NUMBER: ${{ github.run_number }}
+  IMAGE_TAG: ${{ github.sha }}
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+      
+    - name: Delete previous cloud-deployement
+      if: ${{ env.RUN_NUMBER > 1}}
+      run : |
+          OLD_RUN=`expr ${{ env.RUN_NUMBER }} - 1`
+          echo "old number: $OLD_RUN "
+          echo "deleting.."
+          aws cloudformation delete-stack --stack-name elon
+          aws cloudformation wait stack-delete-complete --stack-name elon
+#          aws cloudformation delete-stack --stack-name compose-infrastructure$OLD_RUN
+
+      
+#    - name: adding template infrastructure
+#      working-directory: ./infrastructure
+#     run: |
+#           aws cloudformation create-stack --stack-name compose-infrastructure${{ env.RUN_NUMBER }} --template-body file://cloudformation.yaml --capabilities CAPABILITY_IAM 
+#           aws cloudformation wait stack-create-complete --stack-name  compose-infrastructure${{ env.RUN_NUMBER }}            
+           
+    - name: Push frontend docker image
+      id: build-image
+      working-directory: ./frontend
+      env: 
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+          docker build -t ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }} .
+          docker push ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }}
+          echo "::set-output name=image::${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }}"
+    
+    - name: Push relay docker image
+      id: build-relay
+      working-directory: ./relay
+      env: 
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+          docker build -t ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }} .
+          docker push  ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}
+          echo "::set-output name=image::${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}"
+        
+      
+    - name: set environment variables
+      run: |
+          echo "AWS_VPC=$(aws cloudformation describe-stacks --stack-name compose-infrastructure53 --query "Stacks[0].Outputs[?OutputKey=='VpcId'].OutputValue" --output text)" >> $GITHUB_ENV
+          echo "AWS_ECS_CLUSTER=$(aws cloudformation describe-stacks --stack-name compose-infrastructure53 --query "Stacks[0].Outputs[?OutputKey=='ClusterName'].OutputValue" --output text)" >> $GITHUB_ENV
+          echo "AWS_ELB=$(aws cloudformation describe-stacks --stack-name compose-infrastructure53 --query "Stacks[0].Outputs[?OutputKey=='LoadbalancerId'].OutputValue" --output text)" >> $GITHUB_ENV
+        
+          
+    - name: run docker compose
+      env: 
+        DB_SECRET: ${{ secrets.DB_SECRET }}
+        DB_USER: ${{ secrets.DB_USER }}
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+        echo $AWS_ELB
+        curl -L https://raw.githubusercontent.com/docker/compose-cli/main/scripts/install/install_linux.sh | sh
+        echo "test: ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:${{ env.IMAGE_TAG }}"
+        echo "testzwo: $ECR_REGISTRY/$ECR_REPOSITORY:frontend${{ env.IMAGE_TAG }}"
+        docker context create ecs elonmask --from-env
+        docker context use elonmask
+        docker compose --project-name elon up -d

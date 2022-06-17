@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-deployment
+  labels:
+    app: db
+spec:
+  selector:
+    matchLabels:
+      app: db
+      tier: backend
+      track: stable
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: db
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: db
+          image: 'public.ecr.aws/ubuntu/postgres:12-20.04_beta'
+          volumeMounts:
+             - name: db-volume
+               mountPath: /var/lib/postgresql/
+          env:
+          - name: POSTGRES_PASSWORD
+            value: "DBPWPLACEHOLDER"
+          - name: POSTGRES_USER
+            value: 'postgres'
+          - name: POSTGRES_DB
+            value: 'userdb'
+          ports:
+          - containerPort: 5432
+      volumes:
+      - name: db-volume
+        persistentVolumeClaim:
+          claimName: postgress-ebs-claim
