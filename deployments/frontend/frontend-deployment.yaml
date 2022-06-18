@@ -25,4 +25,4 @@ spec:
           - name: API_URL
             value: relay-service
           ports:
-          - containerPort: 8080
+          - containerPort: 80
