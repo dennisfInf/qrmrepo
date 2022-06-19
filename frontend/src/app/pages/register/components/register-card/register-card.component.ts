@@ -56,7 +56,7 @@ export class RegisterCardComponent implements OnInit {
         this.fidoService.getCredential(challenge, userId).then(res => {
           this.authService.loginFinalize(this.username, res).then(res => {
 
-            let token = ""
+            let token = res
             if (this.authService.login(token)) {
              this.router.navigate(["/dashboard"])
             }

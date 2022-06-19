@@ -29,7 +29,7 @@ export const environment = {
   },
   routes : {
     // @ts-ignore
-    authenticationService: "http://"+ window["env"]["API_URL"]+":8080"
+    authenticationService: "http://"+ window["env"]["API_URL"]+":" + window["env"]["API_PORT"]
   }
 };
 
