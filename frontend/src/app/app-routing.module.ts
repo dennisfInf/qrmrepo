@@ -22,8 +22,8 @@ const routes: Routes = [
     canActivate : [AuthGuardService]
   },
   {
-    path: "",
-    component: HomeComponent
+    path: "register",
+    component: RegisterComponent
   },
   {
     path: "about",
@@ -49,9 +49,10 @@ const routes: Routes = [
     ]
   },
   {
-    path: "register",
-    component: RegisterComponent
+    path: "",
+    component: HomeComponent
   },
+
 
 ];
 
