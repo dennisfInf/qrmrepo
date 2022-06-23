@@ -1,50 +1,31 @@
 package main
 
 import (
-	"encoding/json"
+	"github.com/labstack/echo/v4"
 	"net/http"
+	"time"
 
 	"log"
 
 	"github.com/duo-labs/webauthn/protocol"
 	"github.com/duo-labs/webauthn/webauthn"
-	"github.com/gin-gonic/gin"
 )
 
-var webAuthn *webauthn.WebAuthn
-var session *webauthn.SessionData
-var user webAuthnUser
+var (
+	webAuthn *webauthn.WebAuthn
+	session  *webauthn.SessionData
+	user     User
+)
 
-type webAuthnUser struct {
-	id   []byte
-	name string
-	User string
-}
+func BeginRegisterHandler(c echo.Context) error {
+	username := c.Request().Header.Get("x-username")
+	user = NewUser(username, username)
 
-func (user *webAuthnUser) WebAuthnID() []byte {
-	return user.id
-}
-func (user *webAuthnUser) WebAuthnName() string {
-	return user.name
-}
-func (user *webAuthnUser) WebAuthnDisplayName() string {
-	return user.name
-}
-func (user *webAuthnUser) WebAuthnIcon() string {
-	return ""
-}
-func (user *webAuthnUser) WebAuthnCredentials() []webauthn.Credential {
-	return []webauthn.Credential{}
-}
+	log.Println(user)
 
-func BeginRegisterHandler(c *gin.Context) {
-	//username := c.GetHeader("X-Authenticated-User")
-	username := c.GetHeader("x-username")
 	log.Printf("received request on: /register/begin with username: %s", username)
 
-	user.name = username
 	registerOptions := func(credCreationOpts *protocol.PublicKeyCredentialCreationOptions) {
-		// TODO
 		credCreationOpts.Parameters = []protocol.CredentialParameter{
 			{
 				Type:      "public-key",
@@ -56,38 +37,55 @@ func BeginRegisterHandler(c *gin.Context) {
 			},
 		}
 		credCreationOpts.Attestation = protocol.PreferNoAttestation
+		credCreationOpts.CredentialExcludeList = user.CredentialExcludeList()
 	}
 
-	options, sessionData, err := webAuthn.BeginRegistration(&webAuthnUser{[]byte("1"), username, ""}, registerOptions)
-	session = sessionData
-
-	optionsJSON, _ := json.Marshal(options)
-	log.Printf("Relying Party response to client: %s\n", optionsJSON)
-
+	var options *protocol.CredentialCreation
+	var err error
+	options, session, err = webAuthn.BeginRegistration(user, registerOptions)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	c.JSONP(http.StatusOK, options)
+	log.Println(options)
+
+	return c.JSON(http.StatusOK, options)
 }
 
-func FinishRegisterHandler(c *gin.Context) {
+func FinishRegisterHandler(c echo.Context) error {
 	log.Print("received request on: /register/finish")
 
-	credential, err := webAuthn.FinishRegistration(&user, *session, c.Request)
+	credential, err := webAuthn.FinishRegistration(&user, *session, c.Request())
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	credentialJSON, _ := json.MarshalIndent(credential, "", " ")
+	user.AddCredential(*credential)
 
-	log.Printf("Credential: %s\n", credentialJSON)
-	c.Data(http.StatusOK, "text/html", []byte(""))
+	log.Println(credential)
 
+	return c.String(http.StatusOK, "register successful")
+}
+
+func BeginLoginHandler(c echo.Context) error {
+	var options *protocol.CredentialAssertion
+	var err error
+	options, session, err = webAuthn.BeginLogin(user)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, options)
+}
+
+func FinishLoginHandler(c echo.Context) error {
+	credential, err := webAuthn.FinishLogin(user, *session, c.Request())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+	log.Println(credential)
+
+	return c.String(http.StatusOK, "login successful")
 }
 
 func main() {
@@ -99,15 +97,25 @@ func main() {
 		RPID:          "localhost",
 		RPOrigin:      "http://localhost",
 	})
-
 	if err != nil {
 		log.Fatal("failed to create webauthn from config: ", err)
 	}
 
-	r := gin.Default()
-	r.Use(gin.Logger())
-	r.GET("/register/initialize", BeginRegisterHandler)
-	r.POST("/register/finalize", FinishRegisterHandler)
-	r.Static("/static", "../")
-	r.Run(":8080")
+	e := echo.New()
+	e.Server.ReadTimeout = 5 * time.Second
+	e.Server.WriteTimeout = 10 * time.Second
+	e.Server.IdleTimeout = 120 * time.Second
+
+	e.GET("/register/initialize", BeginRegisterHandler)
+	e.POST("/register/finalize", FinishRegisterHandler)
+	e.GET("/login/initialize", BeginLoginHandler)
+	e.POST("/login/finalize", FinishLoginHandler)
+
+	err = e.Start(":80")
+	if err == http.ErrServerClosed {
+		err = nil
+	}
+	if err != nil {
+		panic(err)
+	}
 }
