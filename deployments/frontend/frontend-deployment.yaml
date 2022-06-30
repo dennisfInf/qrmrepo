@@ -28,3 +28,5 @@ spec:
             value: '2532'
           ports:
           - containerPort: 80
+      nodeSelector:
+        disktype: db

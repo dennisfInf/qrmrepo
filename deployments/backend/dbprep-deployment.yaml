@@ -39,3 +39,5 @@ spec:
           command: ['/app/relay', 'setup']
           ports:
           - containerPort: 436
+      nodeSelector:
+        disktype: db

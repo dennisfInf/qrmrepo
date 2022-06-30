@@ -33,6 +33,8 @@ spec:
             value: 'userdb'
           ports:
           - containerPort: 5432
+      nodeSelector:
+        disktype: db
       volumes:
       - name: db-volume
         emptyDir: {}
