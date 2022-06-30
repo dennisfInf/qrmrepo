@@ -39,4 +39,4 @@ spec:
           ports:
           - containerPort: 2531
       nodeSelector:
-        disktype: ssd
+        disktype: db
