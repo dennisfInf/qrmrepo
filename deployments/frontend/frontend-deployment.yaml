@@ -25,7 +25,7 @@ spec:
           - name: API_URL
             value: relay-service
           - name: API_PORT
-            value: '2532'
+            value: '31143'
           ports:
           - containerPort: 80
       nodeSelector:
