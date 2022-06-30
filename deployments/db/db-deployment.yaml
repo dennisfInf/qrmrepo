@@ -35,5 +35,4 @@ spec:
           - containerPort: 5432
       volumes:
       - name: db-volume
-        persistentVolumeClaim:
-          claimName: postgress-ebs-claim
+        emptyDir: {}
