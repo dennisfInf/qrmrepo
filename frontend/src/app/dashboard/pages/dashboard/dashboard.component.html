@@ -2,7 +2,7 @@
   <div class="bg-white col-span-2 rounded-md shadow-sm">
     <div class="flex">
       <p class="p-5 font-bold">Your Balance </p>
-      <p class="font-thin p-5 text-right text-gray-500"> Address: 0x8B4A4EC8303C24685D276C60A4C74286C6aC4D</p>
+      <p class="font-thin p-5 text-right text-gray-500"> Address: {{address}}</p>
 
     </div>
     <p class="px-5 font-bold text-4xl">5 Eth</p>
@@ -55,15 +55,15 @@
         <p>Amount</p>
       </div>
 
-      <ng-container class="" *ngFor="let transaction of transactions">
-        <div class="col-span-1 my-3">{{transaction.date}}</div>
+      <ng-container class="" *ngFor="let transaction of etherscanTransactions">
+        <div class="col-span-1 my-3">{{date(transaction.timeStamp)}}</div>
         <div class="col-span-2 my-3">
           <div class="flex justify-between"><p class="font-bold">From: </p>
             <p>{{transaction.from}}</p></div>
           <div class="flex justify-between"><p class="font-bold">To: </p>
             <p>{{transaction.to}}</p></div>
         </div>
-        <div class="col-span-1 my-3 text-center">{{transaction.amount}} Eth</div>
+        <div class="col-span-1 my-3 text-center">{{gweiToEth(transaction.value)}} Eth</div>
       </ng-container>
     </div>
 

@@ -28,8 +28,7 @@ export const environment = {
     timeout: 60000,
   },
   routes : {
-    // @ts-ignore
-    authenticationService: "http://"+ window["env"]["API_URL"]+":" + window["env"]["API_PORT"]
+    authenticationService: "http://localhost:8080"
   }
 };
 
