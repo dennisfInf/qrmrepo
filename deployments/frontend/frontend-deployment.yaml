@@ -22,10 +22,8 @@ spec:
         - name: nginx
           image: "IMGPLACEHOLDER"
           env:
-          - name: API_URL
+          - name: API_HOST
             value: relay-service
-          - name: API_PORT
-            value: '31143'
           ports:
           - containerPort: 80
       nodeSelector:
