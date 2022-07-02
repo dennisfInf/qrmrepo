@@ -34,7 +34,7 @@ spec:
           ports:
           - containerPort: 5432
       nodeSelector:
-        disktype: ssd
+        disktype: db
       volumes:
       - name: db-volume
         emptyDir: {}
