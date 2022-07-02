@@ -24,6 +24,10 @@ spec:
           env:
           - name: API_HOST
             value: relay-service
+          - name: API_URL
+            value: '3.127.97.245'
+          - name: API_PORT
+            value: '30400'
           ports:
           - containerPort: 80
       nodeSelector:
