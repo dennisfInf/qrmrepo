@@ -20,6 +20,7 @@ import { PaymentComponent } from './pages/payment/payment.component';
 
 
 import { TransactionPreviewComponent } from './components/transaction/transaction-preview/transaction-preview.component';
+import { LoginComponent } from './pages/login/login.component';
 
 
 @NgModule({
@@ -39,6 +40,7 @@ import { TransactionPreviewComponent } from './components/transaction/transactio
     RegisterCardComponent,
     PaymentComponent,
     TransactionPreviewComponent,
+    LoginComponent,
   ],
   imports: [
     BrowserModule,

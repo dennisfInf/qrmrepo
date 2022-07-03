@@ -9,6 +9,7 @@ import {RegisterComponent} from "./pages/register/register.component";
 import {PaymentComponent} from "./pages/payment/payment.component";
 import {DashboardModule} from "./dashboard/dashboard.module";
 import {AuthGuardService} from "./services/auth-guard.service";
+import {LoginComponent} from "./pages/login/login.component";
 
 
 const routes: Routes = [
@@ -24,6 +25,10 @@ const routes: Routes = [
   {
     path: "register",
     component: RegisterComponent
+  },
+  {
+    path : "login",
+    component: LoginComponent
   },
   {
     path: "about",

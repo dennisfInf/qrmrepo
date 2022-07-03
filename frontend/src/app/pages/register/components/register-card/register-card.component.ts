@@ -47,24 +47,7 @@ export class RegisterCardComponent implements OnInit {
 
   }
 
-  async login() {
-    this.authService.loginInitialize(this.username)
-      .then(res => {
-        let jsonObj = JSON.parse(res)
-        let userId = jsonObj.user.id as BufferSource
-        let challenge = jsonObj.challenge
-        this.fidoService.getCredential(challenge, userId).then(res => {
-          this.authService.loginFinalize(this.username, res).then(res => {
 
-            let token = res
-            if (this.authService.login(token)) {
-             this.router.navigate(["/dashboard"])
-            }
-
-          })
-        })
-      })
-  }
 
 
 }
