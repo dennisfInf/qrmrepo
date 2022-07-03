@@ -9,4 +9,3 @@ spec:
     - protocol: TCP
       port: 2532
       targetPort: 2531
-  type: NodePort
