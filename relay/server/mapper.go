@@ -18,6 +18,7 @@ func (s *Server) UserAddressMapper() echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			username := c.Request().Header.Get("x-username")
 			lookup, err := s.repoManager.Lookup().GetByUsername(c.Request().Context(), username)
+			log.Log().Caller().Msg("received msg")
 
 			if s.repoManager.IsEmptyResultSetError(err) {
 				ip, err := s.DeployEnclave(c.Request().Context())
@@ -87,6 +88,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 							},
 						},
 					},
+					ImagePullSecrets: []apiv1.LocalObjectReference{{"regcred"}},
 					NodeSelector: map[string]string{
 						"disktype": "ssd",
 					},
