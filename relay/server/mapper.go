@@ -51,7 +51,7 @@ func (s *Server) UserAddressMapper() echo.MiddlewareFunc {
 
 func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 	appDeploymentsClient := s.clientset.AppsV1().Deployments("enclave-ns")
-
+	secret, _ := s.clientset.CoreV1().Secrets("default").Get(ctx, "regcred", metav1.CreateOptions{})
 	appDeployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
@@ -88,7 +88,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 							},
 						},
 					},
-					ImagePullSecrets: []apiv1.LocalObjectReference{{"regcred"}},
+					ImagePullSecrets: []apiv1.LocalObjectReference{{secret.Name}},
 					NodeSelector: map[string]string{
 						"disktype": "ssd",
 					},
