@@ -83,7 +83,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 							Image: s.cfg.Image,
 							Ports: []apiv1.ContainerPort{
 								{
-									ContainerPort: 2533,
+									ContainerPort: 80,
 								},
 							},
 						},
@@ -121,7 +121,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 				{
 					Protocol:   "TCP",
 					Port:       2534,
-					TargetPort: intstr.FromInt(2533),
+					TargetPort: intstr.FromInt(80),
 				},
 			},
 		},
