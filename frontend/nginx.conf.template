@@ -8,19 +8,19 @@ http {
         index index.html;
 
         location /register/initialize{
-            proxy_pass http://${API_HOST}:2532;
+            proxy_pass http://${API_HOST}:2532/register/initialize;
         }
 
         location /register/finalize{
-            proxy_pass http://${API_HOST}:2532;
+            proxy_pass http://${API_HOST}:2532/register/finalize;
         }
 
         location /login/initialize{
-            proxy_pass http://${API_HOST}:2532;
+            proxy_pass http://${API_HOST}:2532/login/initialize;
         }
 
         location /login/finalize{
-            proxy_pass http://${API_HOST}:2532;
+            proxy_pass http://${API_HOST}:2532/login/finalize;
         }
 
         location / {
