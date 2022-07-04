@@ -10,6 +10,7 @@ env:
   AWS_REGION: eu-central-1                
   ECR_REPOSITORY: elon-mask 
   RUN_NUMBER: ${{ github.run_number }}
+  IMAGE_TAG: ${{ github.sha }}
   
 permissions:
   contents: read
@@ -60,9 +61,9 @@ jobs:
       env: 
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
-          docker build -t ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend .
-          docker push ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend
-          echo "::set-output name=image::${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend"
+          docker build -t ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }} .
+          docker push ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }}
+          echo "::set-output name=image::${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }}"
     
     - name: Push relay docker image to ECR
       id: build-relay
@@ -70,9 +71,9 @@ jobs:
       env: 
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
-          docker build -t ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay .
-          docker push  ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay
-          echo "::set-output name=image::${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay"
+          docker build -t ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }} .
+          docker push  ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}
+          echo "::set-output name=image::${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}"
 
     
     - name: Push enclave docker image to ECR
@@ -81,9 +82,9 @@ jobs:
       env: 
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
-          docker build -t ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:encl .
-          docker push  ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:encl
-          echo "::set-output name=image::${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:encl"
+          docker build -t ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:encl${{ env.IMAGE_TAG }} .
+          docker push  ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:encl${{ env.IMAGE_TAG }}
+          echo "::set-output name=image::${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:encl${{ env.IMAGE_TAG }}"
 
     - name: Push db to kubernetes cluster
       env: 
@@ -106,9 +107,9 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG_DATA }}" > kubeconfig
           export KUBECONFIG=kubeconfig
           kubectl apply -f dbprep-service.yaml
-          rpl "ENCIMAGE" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:encl" dbprep-deployment.yaml
+          rpl "ENCIMAGE" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:encl${{ env.IMAGE_TAG }}" dbprep-deployment.yaml
           rpl "DBPWPLACEHOLDER" "${{ env.DB_SECRET}}" dbprep-deployment.yaml
-          rpl "IMGPLACEHOLDER" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay" dbprep-deployment.yaml
+          rpl "IMGPLACEHOLDER" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}" dbprep-deployment.yaml
           kubectl apply -f dbprep-deployment.yaml
 
     - name: push relay to kubernetes cluster
@@ -120,9 +121,9 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG_DATA }}" > kubeconfig
           export KUBECONFIG=kubeconfig
           kubectl apply -f relay-service.yaml
-          rpl "ENCIMAGE" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:encl" relay-deployment.yaml
+          rpl "ENCIMAGE" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:encl${{ env.IMAGE_TAG }}" relay-deployment.yaml
           rpl "DBPWPLACEHOLDER" "${{ env.DB_SECRET}}" relay-deployment.yaml
-          rpl "IMGPLACEHOLDER" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay" relay-deployment.yaml
+          rpl "IMGPLACEHOLDER" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:relay${{ env.IMAGE_TAG }}" relay-deployment.yaml
           kubectl apply -f relay-deployment.yaml
           kubectl wait deployment -n default relay-deployment --for=condition=available --timeout=180s
 
@@ -134,5 +135,5 @@ jobs:
       run: |
           echo "${{ secrets.KUBE_CONFIG_DATA }}" > kubeconfig
           export KUBECONFIG=kubeconfig
-          rpl "IMGPLACEHOLDER" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend" frontend-deployment.yaml
+          rpl "IMGPLACEHOLDER" "${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:frontend${{ env.IMAGE_TAG }}" frontend-deployment.yaml
           kubectl apply -f .
