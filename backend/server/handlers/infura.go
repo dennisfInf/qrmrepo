@@ -96,7 +96,7 @@ func (w *InfuraHandler) PrepareTransaction() echo.HandlerFunc {
 
 		nonce, err := w.client.PendingNonceAt(c.Request().Context(), fromAddress)
 		if err != nil {
-			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			return c.String(http.StatusInternalServerError, err.Error())
 		}
 
 		gasLimit := uint64(21000)         // in units
@@ -108,7 +108,7 @@ func (w *InfuraHandler) PrepareTransaction() echo.HandlerFunc {
 
 		chainID, err := w.client.NetworkID(c.Request().Context())
 		if err != nil {
-			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			return c.String(http.StatusInternalServerError, err.Error())
 		}
 
 		tx := types.NewTx(&types.DynamicFeeTx{
@@ -173,7 +173,7 @@ func (w *InfuraHandler) SendTransaction() echo.HandlerFunc {
 
 		signedTx, err := tx.WithSignature(types.LatestSignerForChainID(&in.ChainID), in.Signature)
 		if err != nil {
-			return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			return c.String(http.StatusInternalServerError, err.Error())
 		}
 
 		return w.client.SendTransaction(c.Request().Context(), signedTx)

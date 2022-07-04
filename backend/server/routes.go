@@ -9,7 +9,7 @@ func (s *Server) registerRoutes() error {
 	}
 
 	infura := s.echo.Group("/infura")
-	infura.POST("/getWalletAddress", infuraHandler.GetWalletAddress())
+	infura.GET("/getWalletAddress", infuraHandler.GetWalletAddress())
 	infura.POST("/prepareTransaction", infuraHandler.PrepareTransaction())
 	infura.POST("/sendTransaction", infuraHandler.SendTransaction())
 
