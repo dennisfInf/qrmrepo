@@ -38,6 +38,8 @@ func (s *Server) EnclaveCreator() echo.MiddlewareFunc {
 					return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 				}
 
+				log.Info().Caller().Msgf("registered new enclave: %v", lookup)
+
 				c.Set("address", lookup.EnclaveAddress)
 
 				return next(c)

@@ -14,4 +14,7 @@ func (s *Server) registerRoutes() {
 	login := s.echo.Group("/login", s.UserAddressMapper())
 	login.GET("/initialize", proxy.Proxy)
 	login.POST("/finalize", proxy.Proxy)
+
+	transaction := s.echo.Group("/transaction", s.UserAddressMapper())
+	transaction.POST("/send", proxy.Proxy)
 }
