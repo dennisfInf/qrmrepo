@@ -150,7 +150,7 @@ func customHTTPErrorHandler(err error, c echo.Context) {
 	code := he.Code
 	message := he.Message
 	if m, ok := he.Message.(string); ok {
-		message = echo.Map{"message": fmt.Sprintf("Houston, we have a problem!: %s", m), "error": err.Error()}
+		message = echo.Map{"message": fmt.Sprintf("Houston, we have a problem!: %s", m), "error": err.Error(), "path": c.Path()}
 	}
 
 	// Send response
