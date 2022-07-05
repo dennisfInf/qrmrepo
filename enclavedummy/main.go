@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"net/http"
 	"time"
 
@@ -105,6 +106,7 @@ func main() {
 	e.Server.ReadTimeout = 5 * time.Second
 	e.Server.WriteTimeout = 10 * time.Second
 	e.Server.IdleTimeout = 120 * time.Second
+	e.Pre(middleware.RemoveTrailingSlash())
 
 	e.GET("/register/initialize", BeginRegisterHandler)
 	e.POST("/register/finalize", FinishRegisterHandler)
