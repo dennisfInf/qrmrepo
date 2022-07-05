@@ -13,6 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"net/http"
+	"time"
 )
 
 func (s *Server) EnclaveCreator() echo.MiddlewareFunc {
@@ -43,6 +44,8 @@ func (s *Server) EnclaveCreator() echo.MiddlewareFunc {
 				log.Info().Caller().Msgf("registered new enclave: %v", lookup)
 
 				c.Set("address", lookup.EnclaveAddress)
+
+				time.Sleep(10 * time.Second)
 
 				return next(c)
 
