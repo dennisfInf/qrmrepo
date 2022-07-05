@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog/log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -18,6 +19,7 @@ func (p *ProxyHandler) Proxy(c echo.Context) error {
 
 	uri, err := url.Parse(address + c.Path())
 	if err != nil {
+		log.Error().Caller().Err(err).Msg("failed to parse url")
 		return err
 	}
 
