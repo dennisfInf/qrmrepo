@@ -103,7 +103,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 					},
 					ImagePullSecrets: []apiv1.LocalObjectReference{{secret.Name}},
 					NodeSelector: map[string]string{
-						"disktype": "db",
+						"disktype": "ssd",
 					},
 				},
 			},
