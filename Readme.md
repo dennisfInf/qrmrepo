@@ -56,7 +56,7 @@ Initialize the CA on the master node with:
  ./easyrsa init-pki
  ./easyrsa build-ca
 ```
-Now for every vpn client use a different 'EntityName' and generate the private keys and certificates for it with:\\
+Now for every vpn client use a different 'EntityName' and generate the private keys and certificates for it with:
 NOTE: If you enter a pass-phrase, you have to remember it 
 ```bash
  ./easyrsa gen-req EntityName
@@ -93,6 +93,7 @@ NOTE: Use the last ExecStart= in the config not the empty one.
 
 For Amazon Linux 2 you can find the file under the path /etc/sysconfig/kubelet and write to the file the following (for master otherwise change ip) 
 KUBELET_EXTRA_ARGS='--node-ip 10.8.0.1' 
+
 **3.6** If you did not change the subnet in the vpn server.conf, then you can initialize the cluster with the following:
 ```bash
 kubeadm init --control-plane-endpoint "PUBLIC-IP:6443" --apiserver-advertise-address=10.8.0.1 --pod-network-cidr=192.168.0.0/16
