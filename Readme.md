@@ -10,6 +10,7 @@ swapoff -a
 **2.2** Install docker. For Ubuntu see: https://docs.docker.com/engine/install/ubuntu/ 
 INFO: Make sure to use the same versions on every node. I had an issue with Ubuntu 22.04, where the containers did not stabilize. 
 Ubuntu 20.04 works fine. Verified functionality with docker and cli version 20.10.13, containerd version 
+
 **2.3** Enable docker
  ```bash
 systemctl enable docker --now
