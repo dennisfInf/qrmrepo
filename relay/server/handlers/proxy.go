@@ -17,7 +17,7 @@ type ProxyHandler struct {
 func (p *ProxyHandler) Proxy(c echo.Context) error {
 	address := c.Get("address").(string)
 
-	uri, err := url.Parse(address + c.Path())
+	uri, err := url.Parse(fmt.Sprintf("http://%s%s", address, c.Path()))
 	if err != nil {
 		log.Error().Caller().Err(err).Msg("failed to parse url")
 		return err
