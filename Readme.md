@@ -13,7 +13,7 @@ Ubuntu 20.04 works fine. Verified functionality with docker and cli version 20.1
  ```bash
 systemctl enable docker --now
 ```
-**2.4** Install kubernetes: kubelet, kubeadm & kubectl: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+**2.4** Install kubernetes: kubelet, kubeadm & kubectl: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/ \
 **2.5** Set cgroupdriver as systemd
 ```bash
 cat > /etc/docker/daemon.json
@@ -40,21 +40,21 @@ EOF
 apt-get install openvpn
 ```
 ## To be done on the master node in AWS
-**3.1** clone the easy-rsa github repo: \
+**3.1** clone the easy-rsa github repo: 
 ```bash
 git clone https://github.com/OpenVPN/easy-rsa.git
 ```
-**3.2** navigate into the easyrsa3 subfolder \
+**3.2** navigate into the easyrsa3 subfolder 
 ```bash
 cd easy-rsa/easyrsa3
 ```
-Initialize the CA on the master node with: \
+Initialize the CA on the master node with: 
 ```bash
  ./easyrsa init-pki
  ./easyrsa build-ca
 ```
 Now for every vpn client use a different 'EntityName' and generate the private keys and certificates for it with:\\
-NOTE: If you enter a pass-phrase, you have to remember it \
+NOTE: If you enter a pass-phrase, you have to remember it 
 ```bash
  ./easyrsa gen-req EntityName
  ./easyrsa sign-req client EntityName
@@ -70,8 +70,9 @@ Now create a ta.key for TLS and dh-params with
  openvpn --genkey --secret ta.key
 ```
 You will need the created files for the workers later on \
-Get the server.conf in our github repo under /vpn/server.conf and specify the right paths to the server certificate, private key, ta.key, dh params and  \
-ca cert in line 78-85 and line 244. \ 
+Get the server.conf in our github repo under /vpn/server.conf and specify the right paths to the server certificate, private key, ta.key, dh params and
+ca cert in line 78-85 and line 244.
+
 **3.3** Now you can start the vpn server on the master node under sudo. Specify the right path to the server.conf. \
 You will be prompted to enter a passphrase for the private key of the server, if you have specified one. \
 ```bash
@@ -85,7 +86,7 @@ kubeadm config images pull
 For ubuntu this is done in the file under the path "/etc/systemd/system/kubelet.service.d/10-kubeadm.conf" \
 Check with ifconfig, the ip of the vpn interface tun0. For the master node it should be 10.8.0.1. Add the \
 --node-ip=10.8.0.1 flag to ExecStart=... --node-ip=10.8.0.1. \
-NOTE: Use the last ExecStart= in the config not the empty one. \
+NOTE: Use the last ExecStart= in the config not the empty one. 
 
 For Amazon Linux 2 you can find the file under the path /etc/sysconfig/kubelet and write to the file the following (for master otherwise change ip) \
 KUBELET_EXTRA_ARGS='--node-ip 10.8.0.1' \
@@ -96,6 +97,7 @@ kubeadm init --control-plane-endpoint "PUBLIC-IP:6443" --apiserver-advertise-add
 The control-plane-endpoint flag with the public ip of the master node is only needed if the pipeline is used, otherwise you can skip this \
 option, but you have to manually deploy the application. \
 Remember the kubadm join command, this used used on the other nodes to join the cluster.
+
 **3.7** Copy the admin conf and modify the access rights to be able to access the cluster without the sudo user:
 ```bash
 mkdir -p $HOME/.kube
@@ -131,7 +133,9 @@ where public-ip is the public ip of the master. \
 openvpn --config /path/to/client.conf --daemon
 ``` 
 **4.4** Before joining the cluster, you have to edit the node ip like in step 3.5. After editing join the cluster with the kubeadm join ... command.
-##To be done on the master node
+
+## To be done on the master node
+
 **5.1** Verify, that all nodes and all pods are up with
 ```bash
 kubectl get nodes -o wide 
@@ -151,19 +155,23 @@ all other nodes except the master-node should be labeled with:
 kubectl label node azurenode disktype=db
 ``` 
 **5.4** Now your cluster is all set!
-##To be done on AWS and Github if the pipeline is used. 
+## To be done on AWS and Github if the pipeline is used. 
 NOTE: Notice that, if the pipeline is not used, the image names of the dockerfiles and the environment variables have to be manually set to the right values. \
+
 **6.1** The amazon nodes have to pull the images from ECR and need IAM-Roles for that. Create a new IAM Role on aws by searching for IAM>Roles>Create new Role \
 Select AWS-Service and as use case EC2 \
 Click on next and add the following policies: AmazonEC2FullAccess, IAMFullAccess and AmazonEC2ContainerRegistryFullAccess. \
 Attach the IAM Role to every instance by navigating to your instances right clicking on it, then select security and change IAM-Role. Select your created IAM-Role. \
+
 **6.2** Now again navigate to IAM and create a new User. This user is needed for the pipeline to access the cloud environment and push the images. Add all the following policies
 to the user: AWSAgentlessDiscoveryService, AWSApplicationDiscoveryAgentAccess, AmazonEC2ContainerRegistryFullAccess, AWSMigrationHubDiscoveryAccess,  AWSDiscoveryContinuousExportFirehosePolicy,
 AWSCloudMapFullAccess, AWSApplicationDiscoveryServiceFullAccess, AmazonElasticFileSystemFullAccess, AmazonEC2FullAccess, IAMFullAccess, AutoScalingFullAccess, ElasticLoadBalancingFullAccess,
 ApplicationAutoScalingForAmazonAppStreamAccess, AmazonAPIGatewayPushToCloudWatchLogs, CloudWatchLogsFullAccess, AmazonECS_FullAccess, AmazonRoute53FullAccess, AWSCloudFormationFullAccess. \ \
 After completion you will get your access key id and the secret. Don't close this window, because otherwise, you will have to create a new user. The secret is only shown once.
+
 **6.3** Navigate to your fork or github repo and add under settings>secrets the access key id with the variable name AWS_ACCESS_KEY_ID and the secret with the variablename AWS_SECRET_ACCESS_KEY. \ 
 Here you can also specify the password of the database, by adding the variablename DB_SECRET and specifying a password. 
+
 **6.4** Now the last step is to add the kubeconfig to the repo as the secret KUBE_CONFIG_DATA. To get the contents of the kubeconfig, navigate the master-node and execute the following command: \
 ```bash
 cat $HOME/.kube/config
