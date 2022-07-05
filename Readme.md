@@ -1,5 +1,6 @@
 # Multicloud Kubernetes Cluster Setup
 **1.1** The pipeline only works if the master node is deployed on Amazon. If the master node is on another cloud, the pipeline needs adjustments. 
+
 **1.2** Create your virtual machines on any cloud platform, but at least the main node on AWS. Assign to all machines static public ip's. 
 ## To be done on every virtual machine
 **2.1** Disable swap 
@@ -14,6 +15,7 @@ Ubuntu 20.04 works fine. Verified functionality with docker and cli version 20.1
 systemctl enable docker --now
 ```
 **2.4** Install kubernetes: kubelet, kubeadm & kubectl: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/ 
+
 **2.5** Set cgroupdriver as systemd
 ```bash
 cat > /etc/docker/daemon.json
@@ -121,6 +123,7 @@ another interface, then you have to edit the calico.yaml file.
 **4.1** The ta.key has to be the same on every node. Distribute it to every vpn client with the client certificate, CA certificate, 
 the client private key and the client.conf. The client.conf can be found in our github repo under /vpn/client.conf. You have to  
 edit the client.conf in line 90-92 to specify the right paths to the files. Also in line 111 the path to the ta.key has to be specified. 
+
 **4.2** edit the hosts file with the sudo user 
 ```bash
 nano /etc/hosts
@@ -128,6 +131,7 @@ nano /etc/hosts
 apply to the file: 
 public-ip master-node 
 where public-ip is the public ip of the master. 
+
 **4.3** Now you can open the vpn connection to the master node with: 
 ```bash
 openvpn --config /path/to/client.conf --daemon
