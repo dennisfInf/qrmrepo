@@ -58,7 +58,7 @@ func (s *Server) EnclaveCreator() echo.MiddlewareFunc {
 func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 	appDeploymentsClient := s.clientset.AppsV1().Deployments("enclave-ns")
 	secret, _ := s.clientset.CoreV1().Secrets("enclave-ns").Get(ctx, "regcred", metav1.GetOptions{})
-	log.Info().Msgf("secret %s", secret.Name)
+
 	appDeployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
@@ -143,7 +143,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	log.Info().Msgf("enclave ip: %s Port: %v", service.Spec.ClusterIP, service.Spec.Ports[0].Port)
+
 	return fmt.Sprintf("%s:%d", service.Spec.ClusterIP, service.Spec.Ports[0].Port), nil
 }
 
