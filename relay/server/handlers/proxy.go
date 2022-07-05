@@ -23,6 +23,8 @@ func (p *ProxyHandler) Proxy(c echo.Context) error {
 		return err
 	}
 
+	log.Info().Caller().Msgf("proxying route: %s", uri.String())
+
 	proxy := httputil.NewSingleHostReverseProxy(uri)
 	proxy.ErrorHandler = func(resp http.ResponseWriter, req *http.Request, err error) {
 		if errors.Is(context.Canceled, err) {
