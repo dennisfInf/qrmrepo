@@ -56,8 +56,8 @@ func (s *Server) EnclaveCreator() echo.MiddlewareFunc {
 }
 
 func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
-	appDeploymentsClient := s.clientset.AppsV1().Deployments("enclave-ns")
-	secret, _ := s.clientset.CoreV1().Secrets("enclave-ns").Get(ctx, "regcred", metav1.GetOptions{})
+	appDeploymentsClient := s.clientset.AppsV1().Deployments("default")
+	secret, _ := s.clientset.CoreV1().Secrets("default").Get(ctx, "regcred", metav1.GetOptions{})
 
 	appDeployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -109,7 +109,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	serviceDeploymentsClient := s.clientset.CoreV1().Services("enclave-ns")
+	serviceDeploymentsClient := s.clientset.CoreV1().Services("default")
 
 	serviceDeployment := &apiv1.Service{
 		TypeMeta: metav1.TypeMeta{
@@ -117,8 +117,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 			APIVersion: "v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("%s-service", appResult.Name),
-			Namespace: "enclave-ns",
+			Name: fmt.Sprintf("%s-service", appResult.Name),
 		},
 		Spec: apiv1.ServiceSpec{
 			Selector: map[string]string{
@@ -139,7 +138,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	service, err := s.clientset.CoreV1().Services("enclave-ns").Get(ctx, serviceResult.GetObjectMeta().GetName(), metav1.GetOptions{})
+	service, err := s.clientset.CoreV1().Services("default").Get(ctx, serviceResult.GetObjectMeta().GetName(), metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}
