@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"github.com/enclaive/relay/models"
 	"github.com/labstack/echo/v4"
@@ -58,11 +60,12 @@ func (s *Server) EnclaveCreator() echo.MiddlewareFunc {
 func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 	appDeploymentsClient := s.clientset.AppsV1().Deployments("default")
 	secret, _ := s.clientset.CoreV1().Secrets("default").Get(ctx, "regcred", metav1.GetOptions{})
-
+	randsubstr, _ := randomHex(16)
+	randsubstr = "enclave" + randsubstr
 	appDeployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
-				"app": "enclave",
+				"app": randsubstr,
 			},
 			GenerateName: "enclave-",
 		},
@@ -70,7 +73,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 			Replicas: int32Ptr(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app":   "enclave",
+					"app":   randsubstr,
 					"tier":  "backend",
 					"track": "stable",
 				},
@@ -78,7 +81,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"app":   "enclave",
+						"app":   randsubstr,
 						"tier":  "backend",
 						"track": "stable",
 					},
@@ -108,7 +111,6 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
 	serviceDeploymentsClient := s.clientset.CoreV1().Services("default")
 
 	serviceDeployment := &apiv1.Service{
@@ -121,7 +123,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 		},
 		Spec: apiv1.ServiceSpec{
 			Selector: map[string]string{
-				"app": appResult.Name,
+				"app": randsubstr,
 			},
 			Ports: []apiv1.ServicePort{
 				{
@@ -147,3 +149,11 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 }
 
 func int32Ptr(i int32) *int32 { return &i }
+
+func randomHex(n int) (string, error) {
+	bytes := make([]byte, n)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
+}
