@@ -32,7 +32,7 @@ type Server struct {
 func New(cfg config.ServerConfig, repoManager RepositoryManager) (*Server, error) {
 	e := echo.New()
 	e.Server.ReadTimeout = 5 * time.Second
-	e.Server.WriteTimeout = 10 * time.Second
+	e.Server.WriteTimeout = 60 * time.Second
 	e.Server.IdleTimeout = 120 * time.Second
 
 	kubeconf, err := rest.InClusterConfig()
