@@ -18,4 +18,6 @@ func (s *Server) registerRoutes() {
 	transaction := s.echo.Group("/transaction", s.UserAddressMapper())
 	transaction.GET("/initialize", proxy.Proxy)
 	transaction.POST("/finalize", proxy.Proxy)
+
+	s.echo.GET("/getWalletAddress", proxy.Proxy, s.UserAddressMapper())
 }
