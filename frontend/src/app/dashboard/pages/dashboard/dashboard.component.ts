@@ -8,6 +8,7 @@ import {Contact} from "../../../services/shared/contact";
 import {UserService} from "../../../services/user.service";
 import {EtherscanService} from "../../../services/etherscan.service";
 import {timestamp} from "rxjs";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-dashboard',
@@ -26,7 +27,8 @@ export class DashboardComponent implements OnInit {
               private contactService: ContactsService,
               private shopService: ShopsService,
               private userService: UserService,
-              private etherscanService: EtherscanService) {
+              private etherscanService: EtherscanService,
+              private router : Router) {
     this.transactions = transactionService.getTransactions()
     this.contacts = contactService.getContacts()
     this.shops = shopService.getShops()
@@ -48,5 +50,9 @@ export class DashboardComponent implements OnInit {
   gweiToEth(gwei : string) : number {
     console.log(gwei)
     return Number(gwei)  * 0.000000000000000001
+  }
+
+  route() {
+    this.router.navigate(["/dashboard/user-payment"])
   }
 }

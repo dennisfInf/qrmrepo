@@ -5,6 +5,7 @@ import {TransactionsComponent} from "./pages/transactions/transactions.component
 import {ContactsComponent} from "./pages/contacts/contacts.component";
 import {ProfileComponent} from "./pages/profile/profile.component";
 import {TransactionComponent} from "./pages/transaction/transaction.component";
+import {UserPaymentComponent} from "./pages/user-payment/user-payment.component";
 
 export const DashboardRoutes : Routes= [
   {
@@ -15,6 +16,7 @@ export const DashboardRoutes : Routes= [
       {path : "transactions" , component : TransactionsComponent},
       {path : "contacts" , component : ContactsComponent},
       {path : "profile" , component : ProfileComponent},
+      {path : "user-payment" , component : UserPaymentComponent},
       {path : "" , component : DashboardComponent},
 
     ]

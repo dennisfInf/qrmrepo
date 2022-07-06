@@ -10,12 +10,16 @@ import {PaymentComponent} from "./pages/payment/payment.component";
 import {DashboardModule} from "./dashboard/dashboard.module";
 import {AuthGuardService} from "./services/auth-guard.service";
 import {LoginComponent} from "./pages/login/login.component";
+import {LandingComponent} from "./pages/landing/landing.component";
 
 
 const routes: Routes = [
   {
     path: "payment",
     component: PaymentComponent
+  },{
+    path : "landing",
+    component : LandingComponent
   },
   {
     path: "dashboard",

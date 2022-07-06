@@ -10,6 +10,8 @@ import {DashboardRoutes} from "./dashboard.routes";
 import {RouterModule} from "@angular/router";
 import {ContactThumbnailComponent} from "./contact-thumbnail/contact-thumbnail.component";
 import {ShopThumbnailComponent} from "./shop-thumbnail/shop-thumbnail.component";
+import { UserPaymentComponent } from './pages/user-payment/user-payment.component';
+import {FormsModule} from "@angular/forms";
 
 
 @NgModule({
@@ -21,11 +23,13 @@ import {ShopThumbnailComponent} from "./shop-thumbnail/shop-thumbnail.component"
     ProfileComponent,
     DashboardLayoutComponent,
     ContactThumbnailComponent,
-    ShopThumbnailComponent
+    ShopThumbnailComponent,
+    UserPaymentComponent
   ],
   imports: [
     CommonModule,
-    RouterModule.forChild(DashboardRoutes)
+    RouterModule.forChild(DashboardRoutes),
+    FormsModule
   ],
   exports : [
     RouterModule

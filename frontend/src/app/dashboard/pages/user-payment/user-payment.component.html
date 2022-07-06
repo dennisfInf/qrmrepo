@@ -1,0 +1,9 @@
+<div class="container bg-white rounded-md p-5">
+  <p class="font-bold">Make transaction</p>
+  <hr>
+  <p>Receiver Address</p>
+  <input type="text" [(ngModel)]="receiver" class="focus:outline-purple-600 p-2 border rounded-md w-96">
+  <p>Amount</p>
+  <input [(ngModel)]="amount" class="focus:outline-purple-600 p-2 border rounded-md w-96">
+  <div class="p-3 bg-purple-600 rounded-md w-fit text-white cursor-pointer" (click)="makePayment()">Send</div>
+</div>

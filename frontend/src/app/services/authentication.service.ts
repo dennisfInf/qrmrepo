@@ -89,6 +89,50 @@ export class AuthenticationService {
   }
 
 
+  async transactionInitialize(username: string, amount: string, receiver : string): Promise<string> {
+    return axios.post(
+      environment.routes.authenticationService + "/transaction/initialize",
+      JSON.stringify(
+        {
+          username: username,
+          amount: amount,
+          receiver : receiver
+        }),
+      {
+        headers: {
+          "x-username": username,
+        }
+      }
+    )
+  }
+
+  async transactionFinalize(username : string, token : any) : Promise<string> {
+    return axios.post(
+      environment.routes.authenticationService + "/transaction/initialize",
+      token
+      ,
+      {
+        headers: {
+          "x-username": username,
+        }
+      }
+    )
+  }
+
+  async getPublicKey(username : string) : Promise<string> {
+    //address
+    return axios.get(
+      environment.routes.authenticationService + "/getWalletAddress",
+      {
+        headers: {
+          "x-username": username,
+        }
+      }
+    )
+  }
+
+
+
 
 
 }

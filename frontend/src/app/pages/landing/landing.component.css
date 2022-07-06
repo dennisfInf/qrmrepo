@@ -1,0 +1,5 @@
+.banner {
+  background-image: url("src/assets/background2.jpg");
+  background-size: cover;
+  height: 950px;
+}
