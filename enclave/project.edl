@@ -1,0 +1,39 @@
+enclave {
+    from "openenclave/edl/syscall.edl" import *;
+    from "openenclave/edl/sgx/cpu.edl" import *;
+    from "openenclave/edl/logging.edl" import *;
+    from "platform.edl" import *;
+
+    struct data_t {
+    	[size=size] uint8_t *blob;
+	size_t size;
+	};
+
+    trusted {
+        public void enclave_test();
+	public void enclave_hash(
+	    [in, count=256] char *str,
+	    [out] unsigned char hash[32]
+	    );
+	public void enclave_create_nonce(
+	    [out, size=len] unsigned char* nonce,
+	    uint8_t len);
+	public bool enclave_verify_secp256r1_sig(
+	    [in] data_t *data,
+	    [in] data_t *pk,
+	    [in, size=sig_len] unsigned char* sig,
+	    unsigned int sig_len);
+	public bool enclave_store_ecc_pk(
+	    [in, count=32] unsigned char *x,
+	    [in, count=32] unsigned char *y
+	    );
+    };
+
+    untrusted {
+    	unsigned char* host_create_nonce(unsigned int len);
+	int host_verify_secp256r1_sig([in, count=msg_len] unsigned char *msg, unsigned int msg_len, [in, size=sig_len] unsigned char *sig, unsigned int sig_len);
+	bool host_store_data([in, string] const char *path, [in] data_t *sealed_data);
+	bool host_load_data([in, string] const char *path, [out] data_t *sealed_data);
+	int host_store_ecc_pk([in, count=32] unsigned char *x, [in, count=32] unsigned char *y);
+    };
+};

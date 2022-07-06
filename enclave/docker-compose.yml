@@ -1,0 +1,16 @@
+version: '3.6'
+services:
+ elon_mask_enclave:
+  build: .
+  ports:
+   - 80:80
+  volumes:
+   - ./:/server
+   - /dev/sgx:/dev/sgx
+  devices:
+   - /dev/sgx_enclave:/dev/sgx_enclave
+   - /dev/sgx_provision:/dev/sgx_provision
+  stdin_open: true
+  tty: true
+  
+  

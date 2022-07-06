@@ -78,7 +78,7 @@ jobs:
     
     - name: Push enclave docker image to ECR
       id: build-enclave
-      working-directory: ./enclavedummy
+      working-directory: ./enclave
       env: 
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
