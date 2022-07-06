@@ -85,6 +85,8 @@ bool host_load_data(const char *path, data_t *sealed_data) {
   return ret;
 }
 
+// During the /register/finish the server calls this function to store and
+// seal the public key
 int host_store_ecc_pk(unsigned char *x, unsigned char *y) {
   bool ret = false;
   if (_create_enclave() == OE_OK) {
@@ -93,7 +95,7 @@ int host_store_ecc_pk(unsigned char *x, unsigned char *y) {
   return ret;
 }
 
-unsigned char* host_create_nonce(unsigned int len) {
+unsigned char *host_create_nonce(unsigned int len) {
   unsigned char *nonce = new unsigned char[len];
   std::memset(nonce, 0, len);
   printf("host_create_nonce()\n");
@@ -129,4 +131,28 @@ int host_verify_secp256r1_sig(unsigned char *msg, unsigned int msg_len,
   delete[] pk_sealed.blob;
   printf("HOST: return value is: %d\n", enc_ret);
   return enc_ret;
+}
+
+int host_gen_secp256k1_keys() {
+  int ret = 0;
+  printf("host_create_wallet_keys()\n");
+
+  if (_create_enclave() == OE_OK) {
+    printf("HOST: Created enclave\n");
+    enclave_gen_secp256k1_keys(enclave, &ret);
+  }
+  return ret;
+}
+
+point* host_get_pubkey() {
+	printf("host_get_pubkey()\n");
+	data_t sealed_data{NULL, 0};
+	host_load_data("wallet_pubkey.bin", &sealed_data);
+	point *pubkey = new point{0,0};
+	printf("HOST: CREATE ENCLAVE, %s\n", sealed_data.blob);
+	if(_create_enclave() == OE_OK) {
+		printf("HOST: ENCLAVE_CREATED\n");
+		enclave_get_pubkey(enclave, pubkey, &sealed_data);
+	}
+	return pubkey;
 }

@@ -15,9 +15,9 @@ RUN wget -q -O- https://go.dev/dl/go1.18.3.linux-amd64.tar.gz | tar -xz -C /usr/
 ENV PATH="${PATH}:/usr/local/go/bin"
 
 # Install neovim
-RUN apt install -y ninja-build gettext libtool libtool-bin autoconf automake cmake g++ pkg-config unzip curl doxygen
-RUN git clone https://github.com/neovim/neovim && cd neovim && make install && cd .. && rm -rf neovim
-ENV PATH="${PATH}:/usr/local/bin"
+#RUN apt install -y ninja-build gettext libtool libtool-bin autoconf automake cmake g++ pkg-config unzip curl doxygen
+#RUN git clone https://github.com/neovim/neovim && cd neovim && make install && cd .. && rm -rf neovim
+#ENV PATH="${PATH}:/usr/local/bin"
 
 # Install openenclave
 RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | tee /etc/apt/sources.list.d/intel-sgx.list && \
@@ -45,6 +45,8 @@ RUN apt install -y clang-format
 WORKDIR /server
 
 RUN go install golang.org/x/tools/gopls@latest
+RUN mkdir -p build && cd build && rm -rf * && cmake .. && make
 
-ENTRYPOINT [ "bash" ]
+ENTRYPOINT [ "/server/build" ]
+CMD ["./server"]
 

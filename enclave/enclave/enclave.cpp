@@ -24,6 +24,8 @@ unsigned char *tmp_nonce = NULL;
 
 #define PATH_ATTESTATION_PUBLIC_KEY "att_pk.bin"
 #define PATH_NONCE "nonce.bin"
+#define PATH_WALLET_PUBKEY "wallet_pubkey.bin"
+#define PATH_WALLET_PRIVKEY "wallet_privkey.bin"
 
 class Seal {
 public:
@@ -91,40 +93,6 @@ oe_result_t Seal::unseal(data_t *sealed, uint8_t **data,
   printf("\tsealed length: %d\n", sealed->size);
   return oe_unseal(sealed->blob, sealed->size, this->opt_msg, this->opt_size,
                    data, data_size);
-}
-
-void enclave_test() {
-  printf("ENCLAVE: enclave_test()\n");
-  uint8_t *data = (uint8_t *)"dd";
-  size_t data_size = 2;
-  uint8_t *blob;
-  size_t blob_size;
-  // oe_result_t ret = seal_data(data, 2, blob, &blob_size);
-  // SealStorage storage{OE_SEAL_POLICY_PRODUCT};
-  // auto ret = storage.seal(data, &data_size);
-  auto ret = OE_OK;
-
-  Seal seal{OE_SEAL_POLICY_PRODUCT, "enclave.bin"};
-
-  switch (ret) {
-  case OE_OK:
-    printf("ENCLAVE: Data successfully sealed\n");
-    break;
-  case OE_INVALID_PARAMETER:
-    printf("ENCLAVE: Invalid parameter\n");
-    break;
-  case OE_UNSUPPORTED:
-    printf("ENCLAVE: unsupported\n");
-    break;
-  case OE_OUT_OF_MEMORY:
-    printf("ENCLAVE: Out of memory\n");
-    break;
-  case OE_CRYPTO_ERROR:
-    printf("ENCLAVE: Crypto Error\n");
-    break;
-  default:
-    printf("ENCLAVE: Unkown error\n");
-  }
 }
 
 void enclave_hash(char *str, unsigned char hash[]) {
@@ -296,4 +264,85 @@ bool enclave_verify_secp256r1_sig(data_t *data, data_t *pk, unsigned char *sig,
   std::free(hash);
 
   return ret == 0;
+}
+
+void enclave_gen_secp256k1_keys(int *ret) {
+  mbedtls_ecdsa_context ctx;
+  mbedtls_entropy_context entropy;
+  mbedtls_ecdsa_init(&ctx);
+  mbedtls_entropy_init(&entropy);
+
+  // Generate the keypair
+  if ((*ret = mbedtls_ecdsa_genkey(&ctx, MBEDTLS_ECP_DP_SECP256K1,
+                                   mbedtls_entropy_func, &entropy)) != 0) {
+    printf("ENCLAVE: ERROR: mbedtls_ecdsa_genkey() returned with %d\n", ret);
+  } else {
+    printf("ENCLAVE: x: %lu, y: %lu\n", *ctx.Q.X.p, *ctx.Q.Y.p);
+    // Write the public key to a binary
+    size_t pkey_binary_len = 65;
+    unsigned char *pkey_binary = new unsigned char[pkey_binary_len];
+    if ((*ret = mbedtls_ecp_point_write_binary(
+             &ctx.grp, &ctx.Q, MBEDTLS_ECP_PF_UNCOMPRESSED, &pkey_binary_len,
+             pkey_binary, pkey_binary_len)) != 0) {
+      printf(
+          "ENCLAVE: ERROR: mbedtls_ecp_point_write_binary() returned with %d\n",
+          *ret);
+    } else {
+      // Seal and store the public key
+      data_t pubkey_data{pkey_binary, pkey_binary_len};
+      Seal seal{OE_SEAL_POLICY_PRODUCT, PATH_WALLET_PUBKEY};
+      if ((*ret = seal.seal_store(&pubkey_data)) != 0) {
+        printf("ENCLAVE: ERROR: seal_store() returned with %d\n", *ret);
+      } else {
+        // Write the private key to a binary
+        size_t privkey_binary_len = mbedtls_mpi_size(&ctx.d);
+        unsigned char *privkey_binary = new unsigned char[privkey_binary_len];
+
+        if ((*ret = mbedtls_mpi_write_binary(&ctx.d, privkey_binary,
+                                             privkey_binary_len)) != 0) {
+          printf(
+              "ENCLAVE: ERROR: mbedtls_mpi_write_binary() returned with %d\n",
+              *ret);
+        } else {
+          // Seal and store the private key
+          data_t privkey_data{privkey_binary, privkey_binary_len};
+          Seal seal{OE_SEAL_POLICY_PRODUCT, PATH_WALLET_PRIVKEY};
+          if ((*ret = seal.seal_store(&privkey_data)) != 0) {
+            printf("ENCLAVE: ERROR: seal_store() returned with %d\n", *ret);
+          }
+        }
+        delete[] privkey_binary;
+      }
+    }
+    delete[] pkey_binary;
+  }
+
+  // Seal and store the private key
+
+  mbedtls_ecdsa_free(&ctx);
+  mbedtls_entropy_free(&entropy);
+}
+
+void enclave_get_pubkey(point *pubkey, data_t *sealed_data) {
+  printf("ENCLAVE: enclave_get_pubkey()\n");
+  int ret = 0;
+  mbedtls_ecp_group grp;
+  mbedtls_ecp_point p;
+  mbedtls_ecp_group_init(&grp);
+  mbedtls_ecp_point_init(&p);
+  mbedtls_ecp_group_load(&grp, MBEDTLS_ECP_DP_SECP256K1);
+  unsigned char *data = NULL;
+  size_t data_size = 0;
+  Seal seal{OE_SEAL_POLICY_PRODUCT, PATH_WALLET_PUBKEY};
+  if (seal.unseal(sealed_data, &data, &data_size) == 0) {
+    if ((ret = mbedtls_ecp_point_read_binary(&grp, &p, data, data_size)) != 0) {
+      printf(
+          "ENCLAVE: ERROR: mbedtls_ecp_point_read_binary() returned with %d\n",
+          ret);
+    } else {
+      pubkey->x = *p.X.p;
+      pubkey->y = *p.Y.p;
+      printf("ENCLAVE: x: %d, y: %d\n", pubkey->x, pubkey->y);
+    }
+  }
 }

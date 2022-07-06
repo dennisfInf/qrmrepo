@@ -23,6 +23,11 @@ var webAuthn *webauthn.WebAuthn
 var session *webauthn.SessionData
 var user webAuthnUser
 
+type point struct {
+	X uint32 `json:"x"`
+	Y uint32 `json:"y"`
+}
+
 type webAuthnUser struct {
 	id         []byte
 	name       string
@@ -121,8 +126,19 @@ func FinishLogin(c *gin.Context) {
 	c.JSON(http.StatusOK, "Login Success")
 }
 
+func getPublicKey(c *gin.Context) {
+	log.Print("received request on: /getPublicKey")
+
+	Cpoint := C.host_get_pubkey()
+	log.Printf("x: %lu, y: %lu\n", Cpoint.x, Cpoint.y)
+	p := point{X: uint32(Cpoint.x), Y: uint32(Cpoint.y)}
+	c.JSON(http.StatusOK, p)
+}
+
 func main() {
 	var err error
+
+	C.host_gen_secp256k1_keys()
 
 	log.Print("create the webauthn config")
 	webAuthn, err = webauthn.New(&webauthn.Config{
@@ -141,6 +157,7 @@ func main() {
 	r.POST("/register/finish/:user", FinishRegisterHandler)
 	r.GET("/login/begin/:user", BeginLoginHandler)
 	r.POST("/login/finish/:user", FinishLogin)
+	r.GET("/getPublicKey", getPublicKey)
 	r.Static("/static", "../")
-	r.Run(":2533")
+	r.Run(":80")
 }
