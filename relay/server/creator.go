@@ -94,6 +94,26 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 						{
 							Name:  "enclave",
 							Image: s.cfg.Image,
+							VolumeMounts: []apiv1.VolumeMount{
+								{
+									Name:      "server-volume",
+									MountPath: "/server",
+								},
+								{
+									Name:      "sgx-volume",
+									MountPath: "/dev/sgx",
+								},
+							},
+							VolumeDevices: []apiv1.VolumeDevice{
+								{
+									Name:       "/dev/sgx_enclave",
+									DevicePath: "/dev/sgx_enclave",
+								},
+								{
+									Name:       "/dev/sgx_provision",
+									DevicePath: "/dev/sgx_provision",
+								},
+							},
 							Ports: []apiv1.ContainerPort{
 								{
 									ContainerPort: 2533,
@@ -104,6 +124,19 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 					ImagePullSecrets: []apiv1.LocalObjectReference{{secret.Name}},
 					NodeSelector: map[string]string{
 						"disktype": "ssd",
+					},
+					Volumes: []apiv1.Volume{
+						{
+							Name: "server-volume",
+							VolumeSource: apiv1.VolumeSource{
+								EmptyDir: &apiv1.EmptyDirVolumeSource{},
+							},
+						},
+						{
+							Name: "sgx-volume",
+							VolumeSource: apiv1.VolumeSource{
+								EmptyDir: &apiv1.EmptyDirVolumeSource{}},
+						},
 					},
 				},
 			},

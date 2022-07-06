@@ -46,9 +46,5 @@ WORKDIR /server
 
 RUN go install golang.org/x/tools/gopls@latest
 
-RUN mkdir -p build && cd build && rm -rf * && cmake .. && make
-
-RUN cd build && ./server
-
 ENTRYPOINT [ "bash" ]
 
