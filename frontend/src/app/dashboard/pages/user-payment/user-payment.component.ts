@@ -19,6 +19,7 @@ export class UserPaymentComponent implements OnInit {
   }
 
   async makePayment() {
+
     this.authService.transactionInitialize(this.username, this.amount, this.receiver)
       .then(res => {
         let jsonObj = JSON.parse(res)
@@ -31,5 +32,6 @@ export class UserPaymentComponent implements OnInit {
         })
       })
   }
+
 
 }

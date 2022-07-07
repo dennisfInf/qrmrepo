@@ -24,9 +24,8 @@ export class LoginComponent implements OnInit {
         let challenge = jsonObj.challenge
         this.fidoService.getCredential(challenge, userId).then(res => {
           this.authService.loginFinalize(this.username, res).then(res => {
-            console.log(res)
-            let token = res
-            if (this.authService.login(token)) {
+
+            if (this.authService.login(this.name)) {
               this.router.navigate(["/dashboard"])
             }
 

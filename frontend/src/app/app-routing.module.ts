@@ -24,7 +24,7 @@ const routes: Routes = [
   {
     path: "dashboard",
     loadChildren: () => DashboardModule,
-    // canActivate : [AuthGuardService]
+    canActivate : [AuthGuardService]
   },
   {
     path: "register",

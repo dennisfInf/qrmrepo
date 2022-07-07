@@ -4,6 +4,7 @@ import {Transaction} from "../../../services/shared/transaction";
 import {UserService} from "../../../services/user.service";
 import {EtherscanService} from "../../../services/etherscan.service";
 import {Router} from "@angular/router";
+import {AuthenticationService} from "../../../services/authentication.service";
 
 @Component({
   selector: 'app-transactions',
@@ -13,14 +14,19 @@ import {Router} from "@angular/router";
 export class TransactionsComponent implements OnInit {
   etherscanTransactions : any[] = []
   transactions!:Transaction[]
+  address! : string
   constructor(private transactionService : TransactionService,
               private userService : UserService,
               private etherscanService : EtherscanService,
-              private router : Router) {
-    this.etherscanService.getTransactions(this.userService.getAddress(), 0).then(res => {
-      this.etherscanTransactions = res.data.result
-      console.log(this.etherscanTransactions)
+              private router : Router,
+              private authService : AuthenticationService) {
+     authService.getPublicKey(authService.getToken()).then(res => {
+      this.etherscanService.getTransactions(res, 0).then(res => {
+        this.etherscanTransactions = res.data.result
+        console.log(this.etherscanTransactions)
+      })
     })
+
   }
 
   ngOnInit(): void {

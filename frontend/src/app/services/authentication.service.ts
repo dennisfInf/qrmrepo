@@ -72,7 +72,7 @@ export class AuthenticationService {
     if (token == null){
       return false
     }
-    return !this.jwtHelper.isTokenExpired(token);
+    return true;
   }
 
   public login(token : string) : boolean {
