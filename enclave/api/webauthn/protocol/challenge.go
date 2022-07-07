@@ -37,6 +37,14 @@ func CreateChallenge() (Challenge, error) {
 	}*/
 	return challenge, nil
 }
+func CreateChallengeHash(hash [32]byte) (Challenge, error) {
+	// Receive a nonce from the enclave
+	Cchallenge := C.host_create_nonce_hash((*C.uchar)(C.CBytes(hash[:])), 32)
+	challenge := C.GoBytes(unsafe.Pointer(Cchallenge), C.int(ChallengeLength))
+	C.free(unsafe.Pointer(Cchallenge))
+
+	return challenge, nil
+}
 
 func (c Challenge) String() string {
 	return base64.RawURLEncoding.EncodeToString(c)

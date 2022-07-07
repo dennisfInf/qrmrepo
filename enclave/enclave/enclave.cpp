@@ -1,3 +1,4 @@
+#include "project_args.h"
 #include "project_t.h"
 #include <algorithm>
 #include <cstddef>
@@ -151,11 +152,12 @@ bool enclave_store_ecc_pk(unsigned char *x, unsigned char *y) {
 
 // Generate a nonce and write it to out
 // Store the nonce
-void enclave_create_nonce(unsigned char *out, uint8_t len) {
+void enclave_create_nonce(unsigned char *out, uint8_t len, data_t *opt) {
   printf("ENCLAVE: enclave_create_nonce()\n");
 
   int ret = 1;
   int exit_code = EXIT_FAILURE;
+  size_t nonce_size = 32;
   mbedtls_ctr_drbg_context ctr_drbg;
   mbedtls_entropy_context entropy;
 
@@ -167,7 +169,7 @@ void enclave_create_nonce(unsigned char *out, uint8_t len) {
   if (ret == 0) {
     mbedtls_ctr_drbg_set_prediction_resistance(&ctr_drbg,
                                                MBEDTLS_CTR_DRBG_PR_OFF);
-    ret = mbedtls_ctr_drbg_random(&ctr_drbg, out, 32);
+    ret = mbedtls_ctr_drbg_random(&ctr_drbg, out, nonce_size);
     if (ret == 0) {
       exit_code = EXIT_SUCCESS;
     } else {
@@ -181,6 +183,17 @@ void enclave_create_nonce(unsigned char *out, uint8_t len) {
   mbedtls_entropy_free(&entropy);
 
   Seal seal{OE_SEAL_POLICY_PRODUCT, PATH_NONCE};
+  if (opt != NULL && opt->size > 0) {
+    size_t challenge_size = nonce_size + opt->size;
+    unsigned char *challenge = new unsigned char[challenge_size];
+
+    std::memcpy(challenge, out, nonce_size);
+    std::memcpy(challenge + nonce_size, opt->blob, opt->size);
+
+    data_t data{challenge, challenge_size};
+    seal.seal_store(&data);
+    return;
+  }
   data_t data{out, len};
   seal.seal_store(&data);
 }
@@ -342,7 +355,45 @@ void enclave_get_pubkey(point *pubkey, data_t *sealed_data) {
     } else {
       pubkey->x = *p.X.p;
       pubkey->y = *p.Y.p;
-      printf("ENCLAVE: x: %d, y: %d\n", pubkey->x, pubkey->y);
+      printf("ENCLAVE: x: %lu, y: %lu\n", *p.X.p, *p.Y.p);
     }
   }
+}
+
+void enclave_sign_sha256(data_t *hash_data, data_t *sealed_bin, data_t *sig_data) {
+  if (hash_data == NULL || sealed_bin == NULL) {
+    return;
+  }
+
+  unsigned char *data = NULL;
+  size_t data_size = 0;
+  Seal seal_bin{OE_SEAL_POLICY_PRODUCT, PATH_WALLET_PRIVKEY};
+  seal_bin.unseal(sealed_bin, &data, &data_size);
+  mbedtls_mpi priv;
+  mbedtls_entropy_context entropy;
+  mbedtls_mpi_init(&priv);
+
+  // Read the private key
+  mbedtls_mpi_read_binary(&priv, data, data_size);
+  mbedtls_ecdsa_context ctx;
+  mbedtls_ecp_group grp;
+  mbedtls_ecp_point p;
+  mbedtls_entropy_init(&entropy);
+  mbedtls_ecdsa_init(&ctx);
+  mbedtls_ecp_group_init(&grp);
+  mbedtls_ecp_point_init(&p);
+  mbedtls_ecp_group_load(&grp, MBEDTLS_ECP_DP_SECP256K1);
+
+  ctx.grp = grp;
+  ctx.d = priv;
+
+  size_t siglen = 73;
+  unsigned char *sig = new unsigned char[siglen];
+
+  mbedtls_ecdsa_write_signature(&ctx, MBEDTLS_MD_SHA256, hash_data->blob,
+                                hash_data->size, sig, &siglen,
+                                mbedtls_entropy_func, &entropy);
+
+  sig_data->blob = sig;
+  sig_data->size = siglen;
 }

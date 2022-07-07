@@ -9,8 +9,8 @@ enclave {
 	size_t size;
 	};
     struct point {
-         unsigned int x;
-	 unsigned int y;
+         uint64_t x;
+	 uint64_t y;
         };
 
     trusted {
@@ -20,12 +20,15 @@ enclave {
 	    );
 	public void enclave_create_nonce(
 	    [out, size=len] unsigned char* nonce,
-	    uint8_t len);
+	    uint8_t len,
+	    [in] data_t *opt
+	    );
 	public bool enclave_verify_secp256r1_sig(
 	    [in] data_t *data,
 	    [in] data_t *pk,
 	    [in, size=sig_len] unsigned char* sig,
-	    unsigned int sig_len);
+	    unsigned int sig_len
+	    );
 	public bool enclave_store_ecc_pk(
 	    [in, count=32] unsigned char *x,
 	    [in, count=32] unsigned char *y
@@ -37,15 +40,22 @@ enclave {
 	    [out] point *pubkey,
 	    [in] data_t *sealed_data
 	    );
+	public void enclave_sign_sha256(
+	    [in] data_t *hash_data, 
+	    [in] data_t *sealed_bin, 
+	    [out] data_t *sig_data
+	);
     };
 
     untrusted {
     	unsigned char* host_create_nonce(unsigned int len);
+	unsigned char *host_create_nonce_hash([in, count=len] unsigned char *hash, unsigned int len);
 	int host_verify_secp256r1_sig([in, count=msg_len] unsigned char *msg, unsigned int msg_len, [in, size=sig_len] unsigned char *sig, unsigned int sig_len);
 	bool host_store_data([in, string] const char *path, [in] data_t *sealed_data);
 	bool host_load_data([in, string] const char *path, [out] data_t *sealed_data);
 	int host_store_ecc_pk([in, count=32] unsigned char *x, [in, count=32] unsigned char *y);
 	int host_gen_secp256k1_keys();
 	point* host_get_pubkey();
+	unsigned char *host_sign_secp256k1(unsigned char *hash, unsigned int hash_len);
     };
 };

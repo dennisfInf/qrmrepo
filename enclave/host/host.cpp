@@ -102,10 +102,23 @@ unsigned char *host_create_nonce(unsigned int len) {
 
   if (_create_enclave() == OE_OK) {
     printf("create enclave\n");
-    enclave_create_nonce(enclave, nonce, len);
+    enclave_create_nonce(enclave, nonce, len, NULL);
     printf("nonce: %s\n", nonce);
   }
-  printf("Finish");
+  return nonce;
+}
+
+unsigned char *host_create_nonce_hash(unsigned char *hash, unsigned int len) {
+  data_t hash_data{hash, len};
+  unsigned char *nonce = new unsigned char[len + 32];
+  std::memset(nonce, 0, len + 32);
+  printf("host_create_nonce_hash()\n");
+
+  if (_create_enclave() == OE_OK) {
+    printf("create enclave\n");
+    enclave_create_nonce(enclave, nonce, len + 32, &hash_data);
+    printf("nonce: %s\n", nonce);
+  }
   return nonce;
 }
 
@@ -144,15 +157,28 @@ int host_gen_secp256k1_keys() {
   return ret;
 }
 
-point* host_get_pubkey() {
-	printf("host_get_pubkey()\n");
-	data_t sealed_data{NULL, 0};
-	host_load_data("wallet_pubkey.bin", &sealed_data);
-	point *pubkey = new point{0,0};
-	printf("HOST: CREATE ENCLAVE, %s\n", sealed_data.blob);
-	if(_create_enclave() == OE_OK) {
-		printf("HOST: ENCLAVE_CREATED\n");
-		enclave_get_pubkey(enclave, pubkey, &sealed_data);
-	}
-	return pubkey;
+point *host_get_pubkey() {
+  printf("host_get_pubkey()\n");
+  data_t sealed_data{NULL, 0};
+  host_load_data("wallet_pubkey.bin", &sealed_data);
+  point *pubkey = new point{0, 0};
+  printf("HOST: CREATE ENCLAVE, %s\n", sealed_data.blob);
+  if (_create_enclave() == OE_OK) {
+    printf("HOST: ENCLAVE_CREATED\n");
+    enclave_get_pubkey(enclave, pubkey, &sealed_data);
+  }
+  return pubkey;
+}
+
+unsigned char *host_sign_secp256k1(unsigned char *hash, unsigned int hash_len) {
+  printf("host_sign_secp256k1()\n");
+  data_t sealed_bin;
+  data_t sig_data;
+  host_load_data("wallet_privkey.bin", &sealed_bin);
+  data_t hash_data{hash, hash_len};
+  if (_create_enclave() == OE_OK) {
+    printf("HOST: ENCLAVE_CREATED\n");
+    enclave_sign_sha256(enclave, &hash_data, &sealed_bin, &sig_data);
+  }
+  return sig_data.blob;
 }

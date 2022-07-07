@@ -67,6 +67,52 @@ func (webauthn *WebAuthn) BeginLogin(user User, opts ...LoginOption) (*protocol.
 	return &response, &newSessionData, nil
 }
 
+func (webauthn *WebAuthn) BeginTransaction(user User, hash [32]byte, opts ...LoginOption) (*protocol.CredentialAssertion, *SessionData, error) {
+	challenge, err := protocol.CreateChallengeHash(hash)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	credentials := user.WebAuthnCredentials()
+
+	if len(credentials) == 0 { // If the user does not have any credentials, we cannot do login
+		return nil, nil, protocol.ErrBadRequest.WithDetails("Found no credentials for user")
+	}
+
+	var allowedCredentials = make([]protocol.CredentialDescriptor, len(credentials))
+
+	for i, credential := range credentials {
+		var credentialDescriptor protocol.CredentialDescriptor
+		credentialDescriptor.CredentialID = credential.ID
+		credentialDescriptor.Type = protocol.PublicKeyCredentialType
+		allowedCredentials[i] = credentialDescriptor
+	}
+
+	requestOptions := protocol.PublicKeyCredentialRequestOptions{
+		Challenge:          challenge,
+		Timeout:            webauthn.Config.Timeout,
+		RelyingPartyID:     webauthn.Config.RPID,
+		UserVerification:   webauthn.Config.AuthenticatorSelection.UserVerification,
+		AllowedCredentials: allowedCredentials,
+	}
+
+	for _, setter := range opts {
+		setter(&requestOptions)
+	}
+
+	newSessionData := SessionData{
+		Challenge:            base64.RawURLEncoding.EncodeToString(challenge),
+		UserID:               user.WebAuthnID(),
+		AllowedCredentialIDs: requestOptions.GetAllowedCredentialIDs(),
+		UserVerification:     requestOptions.UserVerification,
+		Extensions:           requestOptions.Extensions,
+	}
+
+	response := protocol.CredentialAssertion{requestOptions}
+
+	return &response, &newSessionData, nil
+}
+
 // Updates the allowed credential list with Credential Descripiptors, discussed in §5.10.3
 // (https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialdescriptor) with user-supplied values
 func WithAllowedCredentials(allowList []protocol.CredentialDescriptor) LoginOption {
@@ -91,6 +137,15 @@ func WithAssertionExtensions(extensions protocol.AuthenticationExtensions) Login
 
 // Take the response from the client and validate it against the user credentials and stored session data
 func (webauthn *WebAuthn) FinishLogin(user User, session SessionData, response *http.Request) (*Credential, error) {
+	parsedResponse, err := protocol.ParseCredentialRequestResponse(response)
+	if err != nil {
+		return nil, err
+	}
+
+	return webauthn.ValidateLogin(user, session, parsedResponse)
+}
+
+func (webauthn *WebAuthn) FinishTransaction(user User, session SessionData, response *http.Request) (*Credential, error) {
 	parsedResponse, err := protocol.ParseCredentialRequestResponse(response)
 	if err != nil {
 		return nil, err
