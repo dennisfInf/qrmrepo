@@ -8,9 +8,12 @@ enclave {
     	[size=size] uint8_t *blob;
 	size_t size;
 	};
+    struct point {
+         unsigned int x;
+	 unsigned int y;
+        };
 
     trusted {
-        public void enclave_test();
 	public void enclave_hash(
 	    [in, count=256] char *str,
 	    [out] unsigned char hash[32]
@@ -27,6 +30,13 @@ enclave {
 	    [in, count=32] unsigned char *x,
 	    [in, count=32] unsigned char *y
 	    );
+        public void enclave_gen_secp256k1_keys(
+	    [out] int *ret
+	    );
+	public void enclave_get_pubkey(
+	    [out] point *pubkey,
+	    [in] data_t *sealed_data
+	    );
     };
 
     untrusted {
@@ -35,5 +45,7 @@ enclave {
 	bool host_store_data([in, string] const char *path, [in] data_t *sealed_data);
 	bool host_load_data([in, string] const char *path, [out] data_t *sealed_data);
 	int host_store_ecc_pk([in, count=32] unsigned char *x, [in, count=32] unsigned char *y);
+	int host_gen_secp256k1_keys();
+	point* host_get_pubkey();
     };
 };
