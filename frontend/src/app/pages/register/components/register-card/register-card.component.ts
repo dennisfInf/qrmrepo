@@ -37,7 +37,7 @@ export class RegisterCardComponent implements OnInit {
         let challenge = jsonObj.challenge
         this.fidoService.createCredential(challenge, this.username, this.userId, this.name).then(res => {
           this.authService.registerFinalize(this.username, res).then(res => {
-            this.router.navigate(["/sign-in"])
+            this.router.navigate(["/login"])
           })
         })
       })
