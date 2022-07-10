@@ -264,7 +264,7 @@ func beginTransaction(c *gin.Context) {
 		return
 	}
 
-	reqPrepTran, err := http.NewRequest("POST", backendIPAddr+"/getWalletAddress", bytes.NewBuffer(prepTranInjs))
+	reqPrepTran, err := http.NewRequest("POST", backendIPAddr+"/prepareTransaction", bytes.NewBuffer(prepTranInjs))
 	if err != nil {
 		log.Printf("Couldn't initialize a new request, %s\n", err.Error())
 		c.JSON(http.StatusInternalServerError, err.Error())
