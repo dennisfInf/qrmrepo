@@ -112,8 +112,19 @@ func (w *InfuraHandler) PrepareTransaction() echo.HandlerFunc {
 		}
 
 		gasLimit := uint64(float64(estimatedGas) * 1.30) // in units
-		tipCap := big.NewInt(20000000000)                // maxPriorityFeePerGas = 20 Gwei
-		feeCap := big.NewInt(200000000000)               // maxFeePerGas = 200 Gwei
+
+		tipCap, err := w.client.SuggestGasTipCap(c.Request().Context()) // maxPriorityFeePerGas in Gwei
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+
+		feeCap, err := w.client.SuggestGasPrice(c.Request().Context()) // maxFeePerGas in Gwei
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+
+		//tipCap := big.NewInt(20000000000)                // maxPriorityFeePerGas = 20 Gwei
+		//feeCap := big.NewInt(200000000000)               // maxFeePerGas = 200 Gwei
 
 		chainID, err := w.client.NetworkID(c.Request().Context())
 		if err != nil {
