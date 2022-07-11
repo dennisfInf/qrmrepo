@@ -162,6 +162,8 @@ point *host_get_pubkey() {
       goto exit;
     }
 
+  } else {
+
     if (_create_enclave() == OE_OK) {
       printf("HOST: ENCLAVE_CREATED\n");
       enclave_get_pubkey(enclave, pubkey, &sealed_data);
