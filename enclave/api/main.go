@@ -208,8 +208,8 @@ func getWalletAddressHandler() echo.HandlerFunc {
 // Respond the client with a challenge
 func prepareTransactionHandler() echo.HandlerFunc {
 	type input struct {
-		Amount  uint   `json:"amount"`
-		Address []byte `json:"address"`
+		Amount  uint64 `json:"amount"`
+		Address string `json:"address"`
 	}
 
 	// Prepare the transaction
@@ -217,7 +217,7 @@ func prepareTransactionHandler() echo.HandlerFunc {
 		PublicKeyX uint64 `json:"public_key_x"`
 		PublicKeyY uint64 `json:"public_key_y"`
 		ToAddress  string `json:"to_address"`
-		Value      uint   `json:"value"`
+		Value      uint64   `json:"value"`
 	}
 
 	return func(c echo.Context) error {
@@ -264,7 +264,7 @@ func prepareTransactionHandler() echo.HandlerFunc {
 		prepTranIn := prepareTransactionIn{
 			p.X,
 			p.Y,
-			string(in.Address),
+			in.Address,
 			in.Amount,
 		}
 
@@ -294,33 +294,30 @@ func prepareTransactionHandler() echo.HandlerFunc {
 			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 		}
 
-		options, webSession, err := webAuthn.BeginTransaction(&user, preparedTransaction.Hash)
-		if err != nil {
-			log.Error().Caller().Err(err).Msg("failed to prepare webauthn transaction")
-			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
-		}
+	//	options, webSession, err := webAuthn.BeginTransaction(&user, preparedTransaction.Hash)
+	//	if err != nil {
+	//		log.Error().Caller().Err(err).Msg("failed to prepare webauthn transaction")
+	//		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
+	//	}
 
-		session = webSession
+	//	session = webSession
 
-		return c.JSON(http.StatusOK, options)
+		return c.JSON(http.StatusOK, "")
 	}
 }
 
 // Receives a request with signed payload incl. challenge
-// {address: "...", value: xx, nonce: "..."}
-// +
-// Signature
 func sendTransactionHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		username := c.Request().Header.Get("x-username")
 		log.Info().Caller().Str("username", username).Msgf("received request on: /prepareTransaction")
 
 		// Webauthn
-		_, err := webAuthn.FinishTransaction(&user, *session, c.Request())
-		if err != nil {
-			log.Error().Caller().Err(err).Msg("failed to finish webauthn transaction")
-			return echo.NewHTTPError(http.StatusBadRequest, "webauthn transaction failed")
-		}
+		//_, err := webAuthn.FinishTransaction(&user, *session, c.Request())
+		//if err != nil {
+		//	log.Error().Caller().Err(err).Msg("failed to finish webauthn transaction")
+		//	return echo.NewHTTPError(http.StatusBadRequest, "webauthn transaction failed")
+		//}
 
 		Csig := C.host_sign_secp256k1((*C.uchar)(C.CBytes(preparedTransaction.Hash[:])), C.uint(len(preparedTransaction.Hash)))
 		preparedTransaction.Signature = C.GoBytes(unsafe.Pointer(Csig), 73)
@@ -361,7 +358,7 @@ func main() {
 
 	backendIPAddr = "http://" + os.Getenv("BACKEND_IP") + "/infura"
 
-	C.host_gen_secp256k1_keys()
+	//C.host_gen_secp256k1_keys()
 
 	//log.Print("==== Testing Sign ====")
 	//C.test_sign_secp256k1()
@@ -388,8 +385,8 @@ func main() {
 	e.POST("/login/finalize", loginFinalizeHandler())
 	e.GET("/getPublicKey", getPublicKeyHandler())
 	e.GET("/getWalletAddress", getWalletAddressHandler())
-	e.GET("/prepareTransaction", prepareTransactionHandler())
-	e.GET("/sendTransaction", sendTransactionHandler())
+	e.POST("/prepareTransaction", prepareTransactionHandler())
+	e.POST("/sendTransaction", sendTransactionHandler())
 
 	err = e.Start(":80")
 	if err == http.ErrServerClosed {
