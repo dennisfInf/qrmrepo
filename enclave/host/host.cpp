@@ -182,3 +182,30 @@ unsigned char *host_sign_secp256k1(unsigned char *hash, unsigned int hash_len) {
   }
   return sig_data.blob;
 }
+
+void test_sign_secp256k1() {
+  printf("host_test_secp256k1()\n");
+  data_t sealed_privkey;
+  data_t sealed_pubkey;
+  data_t signed_data{NULL, 0};
+  data_t hash{(unsigned char *)std::malloc(32), 32};
+  char *str = "Test";
+
+  // Load the sealed private key
+  host_load_data("wallet_privkey.bin", &sealed_privkey);
+
+  // Load the sealed public key
+  host_load_data("wallet_pubkey.bin", &sealed_pubkey);
+
+  // Generate random value
+  if (_create_enclave() == OE_OK) {
+    printf("HOST: ENCLAVE_CREATED\n");
+    enclave_hash(enclave, str, hash.blob);
+    printf("HOST: Hashed value\n");
+    enclave_sign_sha256(enclave, &hash, &sealed_privkey, &signed_data);
+    printf("HOST: Signed data\n");
+    bool ret = false;
+    enclave_verify_secp256k1_sig(enclave, &ret, &sealed_pubkey, &signed_data,
+                                 &hash);
+  }
+}

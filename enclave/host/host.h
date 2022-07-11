@@ -13,3 +13,4 @@ struct point {
 
 struct point* host_get_pubkey();
 unsigned char *host_sign_secp256k1(unsigned char *hash, unsigned int hash_len);
+void test_sign_secp256k1();
