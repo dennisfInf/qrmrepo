@@ -45,6 +45,11 @@ enclave {
 	    [in] data_t *sealed_bin, 
 	    [out] data_t *sig_data
 	);
+	public bool enclave_verify_secp256k1_sig(
+	    [in] data_t *sealed_pubkey, 
+	    [in] data_t *sig_data,
+            [in] data_t *sig_hash
+	);
     };
 
     untrusted {
@@ -57,5 +62,6 @@ enclave {
 	int host_gen_secp256k1_keys();
 	point* host_get_pubkey();
 	unsigned char *host_sign_secp256k1(unsigned char *hash, unsigned int hash_len);
+	void test_sign_secp256k1();
     };
 };
