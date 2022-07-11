@@ -290,12 +290,12 @@ func beginTransaction(c echo.Context) error {
 func finishTransaction(c echo.Context) error {
 	log.Print("received request on /finishTransaction")
 
-	/*_, err := webAuthn.FinishLogin(&user, *session, c.Request)
+	// Webauthn
+	_, err := webAuthn.FinishLogin(&user, *session, c.Request())
 	if err != nil {
 		log.Print(err)
-		c.JSON(http.StatusBadRequest, err.Error())
-		return
-	}*/
+		return c.String(http.StatusBadRequest, err.Error())
+	}
 
 	Csig := C.host_sign_secp256k1((*C.uchar)(C.CBytes(preparedTransaction.Hash[:])), C.uint(len(preparedTransaction.Hash)))
 
