@@ -34,7 +34,7 @@ int _create_enclave() {
 // This function is called from inside the enclave(ocall)
 bool host_store_data(const char *path, data_t *data) {
   printf("HOST: host_save_blob(..)\n");
-  printf("HOST: PATH: %s, SIZE: %d\n", path, data->size);
+  printf("HOST: PATH: %s, SIZE: %zu\n", path, data->size);
   printf("HOST BLOB: ");
   for (int i = 0; i < data->size; ++i) {
     printf("%d", data->blob[i]);
@@ -55,30 +55,24 @@ bool host_store_data(const char *path, data_t *data) {
 }
 
 bool host_load_data(const char *path, data_t *sealed_data) {
-  std::fstream f{path, std::ios_base::binary | std::ios_base::in |
-                           std::ios_base::ate};
+  std::ifstream f{path, std::ios_base::binary | std::ios_base::in |
+                            std::ios_base::ate};
   bool ret = false;
   data_t s_data;
 
   if (f.is_open()) {
     s_data.size = f.tellg();
-    printf("HOST: blob size: %d\n", s_data.size);
+    printf("HOST: blob size: %zu\n", s_data.size);
     if (s_data.size > 0) {
       s_data.blob = new uint8_t[s_data.size];
       f.seekg(0);
       f.read((char *)s_data.blob, s_data.size);
       ret = f.good();
     }
+  } else {
+    printf("HOST: File not found: %s\n", path);
   }
   f.close();
-
-  printf("HOST: blob: ");
-  for (int i = 0; i < s_data.size; ++i) {
-    printf("%d", s_data.blob[i]);
-  }
-  printf("\n");
-
-  printf("HOST: FINISH\n");
   sealed_data->blob = s_data.blob;
   sealed_data->size = s_data.size;
 
@@ -132,7 +126,7 @@ int host_verify_secp256r1_sig(unsigned char *msg, unsigned int msg_len,
 
   if ((enc_ret = host_load_data("att_pk.bin", &pk_sealed))) {
     printf("HOST: loaded the sealed public key\n");
-    printf("HOST: sealed public key size: %d\n", pk_sealed.size);
+    printf("HOST: sealed public key size: %zu\n", pk_sealed.size);
     if (_create_enclave() == OE_OK) {
       printf("HOST: Enclave created\n");
       enclave_verify_secp256r1_sig(enclave, &enc_ret, &data, &pk_sealed, sig,
@@ -158,15 +152,22 @@ int host_gen_secp256k1_keys() {
 }
 
 point *host_get_pubkey() {
+  point *pubkey = new point{0, 0};
   printf("host_get_pubkey()\n");
   data_t sealed_data{NULL, 0};
-  host_load_data("wallet_pubkey.bin", &sealed_data);
-  point *pubkey = new point{0, 0};
-  printf("HOST: CREATE ENCLAVE, %s\n", sealed_data.blob);
-  if (_create_enclave() == OE_OK) {
-    printf("HOST: ENCLAVE_CREATED\n");
-    enclave_get_pubkey(enclave, pubkey, &sealed_data);
+  if (!host_load_data("wallet_pubkey.bin", &sealed_data)) {
+    if (host_gen_secp256k1_keys() != OE_OK) {
+      printf("HOST: ERROR: An error occured during the generation of the "
+             "keypair\n");
+      goto exit;
+    }
+
+    if (_create_enclave() == OE_OK) {
+      printf("HOST: ENCLAVE_CREATED\n");
+      enclave_get_pubkey(enclave, pubkey, &sealed_data);
+    }
   }
+exit:
   return pubkey;
 }
 
@@ -174,25 +175,41 @@ unsigned char *host_sign_secp256k1(unsigned char *hash, unsigned int hash_len) {
   printf("host_sign_secp256k1()\n");
   data_t sealed_bin;
   data_t sig_data;
-  host_load_data("wallet_privkey.bin", &sealed_bin);
-  data_t hash_data{hash, hash_len};
-  if (_create_enclave() == OE_OK) {
-    printf("HOST: ENCLAVE_CREATED\n");
-    enclave_sign_sha256(enclave, &hash_data, &sealed_bin, &sig_data);
+  if (!host_load_data("wallet_privkey.bin", &sealed_bin)) {
+    if (host_gen_secp256k1_keys() != OE_OK) {
+      printf("HOST: ERROR: An error occured during the generation of the "
+             "keypair\n");
+      goto exit;
+    }
+
+    data_t hash_data{hash, hash_len};
+    if (_create_enclave() == OE_OK) {
+      printf("HOST: ENCLAVE_CREATED\n");
+      enclave_sign_sha256(enclave, &hash_data, &sealed_bin, &sig_data);
+    }
   }
+exit:
   return sig_data.blob;
 }
 
+// Only for testing
 void test_sign_secp256k1() {
   printf("host_test_secp256k1()\n");
   data_t sealed_privkey;
   data_t sealed_pubkey;
   data_t signed_data{NULL, 0};
   data_t hash{(unsigned char *)std::malloc(32), 32};
-  char *str = "Test";
+  char *str = (char *)"Test";
 
   // Load the sealed private key
-  host_load_data("wallet_privkey.bin", &sealed_privkey);
+  if (!host_load_data("wallet_privkey.bin", &sealed_privkey)) {
+    printf("HOST: Generating keypair\n");
+    if (host_gen_secp256k1_keys() != OE_OK) {
+      printf("HOST: ERROR: An error occured during the generation of the "
+             "keypair\n");
+      return;
+    }
+  }
 
   // Load the sealed public key
   host_load_data("wallet_pubkey.bin", &sealed_pubkey);
