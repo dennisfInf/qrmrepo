@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"github.com/enclaive/backend/config"
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -83,7 +84,7 @@ func (w *InfuraHandler) PrepareTransaction() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var in input
 		if err := c.Bind(&in); err != nil {
-			return c.String(http.StatusBadRequest, "invalid json")
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid json")
 		}
 
 		pubkey := ecdsa.PublicKey{
@@ -99,12 +100,20 @@ func (w *InfuraHandler) PrepareTransaction() echo.HandlerFunc {
 			return c.String(http.StatusInternalServerError, err.Error())
 		}
 
-		gasLimit := uint64(21000)         // in units
-		tipCap := big.NewInt(2000000000)  // maxPriorityFeePerGas = 2 Gwei
-		feeCap := big.NewInt(20000000000) // maxFeePerGas = 20 Gwei
-
 		toAddress := common.HexToAddress(in.ToAddress)
 		var data []byte
+
+		estimatedGas, err := w.client.EstimateGas(c.Request().Context(), ethereum.CallMsg{
+			To:   &toAddress,
+			Data: []byte{0},
+		})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+
+		gasLimit := uint64(float64(estimatedGas) * 1.30) // in units
+		tipCap := big.NewInt(20000000000)                // maxPriorityFeePerGas = 20 Gwei
+		feeCap := big.NewInt(200000000000)               // maxFeePerGas = 200 Gwei
 
 		chainID, err := w.client.NetworkID(c.Request().Context())
 		if err != nil {
