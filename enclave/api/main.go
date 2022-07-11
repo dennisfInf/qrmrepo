@@ -16,13 +16,14 @@ import (
 	"math/big"
 	"net/http"
 	"os"
+	"time"
 	"unsafe"
 
 	"log"
 
 	"github.com/duo-labs/webauthn/protocol"
 	"github.com/duo-labs/webauthn/webauthn"
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 )
 
 var webAuthn *webauthn.WebAuthn
@@ -44,8 +45,8 @@ type prepareTransactionOut struct {
 	Data      []byte   `json:"data"`
 }
 type point struct {
-	X uint64 `json:"x"`
-	Y uint64 `json:"y"`
+	X uint64 `json:"public_key_x"`
+	Y uint64 `json:"public_key_y"`
 }
 
 type challenge struct {
@@ -75,15 +76,13 @@ func (user *webAuthnUser) WebAuthnCredentials() []webauthn.Credential {
 	return []webauthn.Credential{*user.credential}
 }
 
-func BeginRegisterHandler(c *gin.Context) {
-	//username := c.GetHeader("X-Authenticated-User")
-	username := c.Param("user")
-	log.Printf("received request on: /register/begin with username: %s", username)
+func BeginRegisterHandler(c echo.Context) error {
+	username := c.Request().Header.Get("x-username")
+	log.Printf("received request on: /register/initialize with username: %s", username)
 
 	user.name = username
 	registerOptions := func(credCreationOpts *protocol.PublicKeyCredentialCreationOptions) {
-		// TODO
-		credCreationOpts.Attestation = protocol.PreferIndirectAttestation
+		credCreationOpts.Attestation = protocol.PreferNoAttestation
 	}
 
 	options, sessionData, err := webAuthn.BeginRegistration(&webAuthnUser{[]byte(""), username, username, nil}, registerOptions)
@@ -93,35 +92,29 @@ func BeginRegisterHandler(c *gin.Context) {
 	log.Printf("Relying Party response to client: %s\n", optionsJSON)
 
 	if err != nil {
-		log.Fatal(err)
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	c.JSONP(http.StatusOK, options)
+	return c.JSON(http.StatusOK, options)
 }
 
-func FinishRegisterHandler(c *gin.Context) {
-	log.Print("received request on: /register/finish")
+func FinishRegisterHandler(c echo.Context) error {
+	log.Print("received request on: /register/finalize")
 
-	credential, err := webAuthn.FinishRegistration(&user, *session, c.Request)
+	credential, err := webAuthn.FinishRegistration(&user, *session, c.Request())
 	if err != nil {
-		log.Fatal(err)
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
 	user.credential = credential
 
-	credentialJSON, _ := json.MarshalIndent(credential, "", " ")
+	log.Println(credential)
 
-	log.Printf("Credential: %+v\n", credentialJSON)
-	c.Data(http.StatusOK, "text/html", []byte(""))
-
+	return c.String(http.StatusOK, "register successful")
 }
 
-func BeginLoginHandler(c *gin.Context) {
-	log.Print("received request on: /login/begin")
+func BeginLoginHandler(c echo.Context) error {
+	log.Print("received request on: /login/initialize")
 	log.Print(user)
 
 	options, webSession, err := webAuthn.BeginLogin(&user)
@@ -130,48 +123,45 @@ func BeginLoginHandler(c *gin.Context) {
 	log.Print(session)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	c.JSON(http.StatusOK, options)
+	return c.JSON(http.StatusOK, options)
 }
 
-func FinishLogin(c *gin.Context) {
-	log.Print("received request on: /login/finish")
+func FinishLoginHandler(c echo.Context) error {
+	log.Print("received request on: /login/finalize")
 
-	_, err := webAuthn.FinishLogin(&user, *session, c.Request)
+	_, err := webAuthn.FinishLogin(&user, *session, c.Request())
 	if err != nil {
 		log.Print(err)
-		c.JSON(http.StatusBadRequest, err.Error())
-		return
+		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	c.JSON(http.StatusOK, "Login Success")
+	return c.String(http.StatusOK, "Login Success")
 }
 
-func getPublicKey(c *gin.Context) {
+func getPublicKey(c echo.Context) error {
 	log.Print("received request on: /getPublicKey")
 	Cpoint := C.host_get_pubkey()
 	p := point{X: uint64(Cpoint.x), Y: uint64(Cpoint.y)}
-	c.JSON(http.StatusOK, p)
+	return c.JSON(http.StatusOK, p)
 }
 
-func getWalletAddress(c *gin.Context) {
+func getWalletAddress(c echo.Context) error {
 	log.Print("received request on: /getWalletAddress")
 	Cpoint := C.host_get_pubkey()
 	p := point{X: uint64(Cpoint.x), Y: uint64(Cpoint.y)}
 	js, err := json.Marshal(p)
+	log.Printf("JSON: %s", js)
 	if err != nil {
 		log.Printf("Couldn't marshal the struct, %s\n", err.Error())
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	req, err := http.NewRequest("POST", backendIPAddr+"/getWalletAddress", bytes.NewBuffer(js))
+	req, err := http.NewRequest("GET", backendIPAddr+"/getWalletAddress", bytes.NewBuffer(js))
 	if err != nil {
 		log.Printf("Couldn't initialize a new request, %s\n", err.Error())
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	req.Header.Set("Content-Type", "application/json")
 
@@ -179,18 +169,17 @@ func getWalletAddress(c *gin.Context) {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("Error occured during request, %s\n", err.Error())
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	c.JSON(http.StatusOK, body)
+	return c.JSONBlob(http.StatusOK, body)
 }
 
 // Response the client with a challenge
-func beginTransaction(c *gin.Context) {
+func beginTransaction(c echo.Context) error {
 	log.Print("received request on /beginTransaction")
 
 	type input struct {
@@ -200,10 +189,9 @@ func beginTransaction(c *gin.Context) {
 
 	var req input
 
-	if err := c.BindJSON(&req); err != nil {
+	if err := c.Bind(&req); err != nil {
 		log.Printf("Couldn't bind the json, %s", err.Error())
-		c.JSON(http.StatusBadRequest, err.Error())
-		return
+		return c.String(http.StatusBadRequest, err.Error())
 	}
 
 	// Get the publix key from the enclave
@@ -212,16 +200,14 @@ func beginTransaction(c *gin.Context) {
 	js, err := json.Marshal(p)
 	if err != nil {
 		log.Printf("Couldn't marshal the struct, %s\n", err.Error())
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
 	// Get the wallet address from the backend
-	reqWallet, err := http.NewRequest("POST", backendIPAddr+"/getWalletAddress", bytes.NewBuffer(js))
+	reqWallet, err := http.NewRequest("GET", backendIPAddr+"/getWalletAddress", bytes.NewBuffer(js))
 	if err != nil {
 		log.Printf("Couldn't initialize a new request, %s\n", err.Error())
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	reqWallet.Header.Set("Content-Type", "application/json")
 
@@ -229,8 +215,7 @@ func beginTransaction(c *gin.Context) {
 	resp, err := client.Do(reqWallet)
 	if err != nil {
 		log.Printf("Error occured during request, %s\n", err.Error())
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -240,8 +225,7 @@ func beginTransaction(c *gin.Context) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("Error occured during parsing response, %s\n", err.Error())
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
 	var respWallet output
@@ -260,15 +244,13 @@ func beginTransaction(c *gin.Context) {
 
 	if err != nil {
 		log.Printf("Couldn't marshal the struct, %s\n", err.Error())
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
 	reqPrepTran, err := http.NewRequest("POST", backendIPAddr+"/prepareTransaction", bytes.NewBuffer(prepTranInjs))
 	if err != nil {
 		log.Printf("Couldn't initialize a new request, %s\n", err.Error())
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	reqWallet.Header.Set("Content-Type", "application/json")
 
@@ -276,8 +258,7 @@ func beginTransaction(c *gin.Context) {
 	respPrepTran, err := client01.Do(reqPrepTran)
 	if err != nil {
 		log.Printf("Error occured during request, %s\n", err.Error())
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	defer respPrepTran.Body.Close()
 
@@ -285,8 +266,7 @@ func beginTransaction(c *gin.Context) {
 
 	if err != nil {
 		log.Printf("Error occured during parsing response, %s\n", err.Error())
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	json.Unmarshal(bodyRespPrepTran, preparedTransaction)
@@ -298,25 +278,24 @@ func beginTransaction(c *gin.Context) {
 	log.Print(session)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	c.JSON(http.StatusOK, options)
+	return c.JSON(http.StatusOK, options)
 }
 
 // Receives a request with signed payload incl. challenge
 // {address: "...", value: xx, nonce: "..."}
 // +
 // Signature
-func finishTransaction(c *gin.Context) {
+func finishTransaction(c echo.Context) error {
 	log.Print("received request on /finishTransaction")
 
-	_, err := webAuthn.FinishLogin(&user, *session, c.Request)
+	/*_, err := webAuthn.FinishLogin(&user, *session, c.Request)
 	if err != nil {
 		log.Print(err)
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
-	}
+	}*/
 
 	Csig := C.host_sign_secp256k1((*C.uchar)(C.CBytes(preparedTransaction.Hash[:])), C.uint(len(preparedTransaction.Hash)))
 
@@ -324,11 +303,10 @@ func finishTransaction(c *gin.Context) {
 
 	json, _ := json.Marshal(preparedTransaction)
 
-	reqPrepTran, err := http.NewRequest("POST", backendIPAddr+"/SendTransaction", bytes.NewBuffer(json))
+	reqPrepTran, err := http.NewRequest("POST", backendIPAddr+"/sendTransaction", bytes.NewBuffer(json))
 	if err != nil {
 		log.Printf("Couldn't initialize a new request, %s\n", err.Error())
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	reqPrepTran.Header.Set("Content-Type", "application/json")
 
@@ -336,20 +314,23 @@ func finishTransaction(c *gin.Context) {
 	respPrepTran, err := client01.Do(reqPrepTran)
 	if err != nil {
 		log.Printf("Error occured during request, %s\n", err.Error())
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	defer respPrepTran.Body.Close()
 
-	c.JSON(http.StatusOK, "Login Success")
+	return c.String(http.StatusOK, "Login Success")
 }
 
 func main() {
 	var err error
 
-	backendIPAddr = os.Getenv("BACKEND_IP")
+	backendIPAddr = "http://" + os.Getenv("BACKEND_IP") + "/infura"
 
 	C.host_gen_secp256k1_keys()
+
+	//log.Print("==== Testing Sign ====")
+	//C.test_sign_secp256k1()
+	//log.Print("==== End Testing ====")
 
 	log.Print("create the webauthn config")
 	webAuthn, err = webauthn.New(&webauthn.Config{
@@ -362,16 +343,25 @@ func main() {
 		log.Fatal("failed to create webauthn from config: ", err)
 	}
 
-	r := gin.Default()
-	r.Use(gin.Logger())
-	r.GET("/register/begin/:user", BeginRegisterHandler)
-	r.POST("/register/finish/:user", FinishRegisterHandler)
-	r.GET("/login/begin/:user", BeginLoginHandler)
-	r.POST("/login/finish/:user", FinishLogin)
-	r.GET("/getPublicKey", getPublicKey)
-	r.GET("/getWalletAddress", getWalletAddress)
-	r.GET("/beginTransaction", beginTransaction)
-	r.POST("/finishTransaction", finishTransaction)
-	r.Static("/static", "../")
-	r.Run(":80")
+	e := echo.New()
+	e.Server.ReadTimeout = 5 * time.Second
+	e.Server.WriteTimeout = 10 * time.Second
+	e.Server.IdleTimeout = 120 * time.Second
+
+	e.GET("/register/initialize", BeginRegisterHandler)
+	e.POST("/register/finalize", FinishRegisterHandler)
+	e.GET("/login/initialize", BeginLoginHandler)
+	e.POST("/login/finalize", FinishLoginHandler)
+	e.GET("/getPublicKey", getPublicKey)
+	e.GET("/getWalletAddress", getWalletAddress)
+	e.GET("/prepareTransaction", beginTransaction)
+	e.GET("/sendTransaction", finishTransaction)
+
+	err = e.Start(":80")
+	if err == http.ErrServerClosed {
+		err = nil
+	}
+	if err != nil {
+		panic(err)
+	}
 }
