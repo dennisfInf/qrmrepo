@@ -29,7 +29,7 @@ add_custom_command(
 	DEPENDS host
 	COMMENT "build webauthn server"
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/api
-	COMMAND go build -o ${CMAKE_CURRENT_BINARY_DIR}/server ${CMAKE_SOURCE_DIR}/api/main.go)
+	COMMAND go build -o ${CMAKE_CURRENT_BINARY_DIR}/server ${CMAKE_SOURCE_DIR}/api)
 
 add_custom_target(sign ALL DEPENDS enclave/enclave.signed)
 add_custom_target(webauthn_api ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/server)
