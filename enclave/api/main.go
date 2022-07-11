@@ -39,8 +39,8 @@ type prepareTransactionOut struct {
 }
 
 type point struct {
-	X big.Int `json:"public_key_x"`
-	Y big.Int `json:"public_key_y"`
+	X uint64 `json:"public_key_x"`
+	Y uint64 `json:"public_key_y"`
 }
 
 type walletAddress struct {
@@ -160,10 +160,7 @@ func getPublicKeyHandler() echo.HandlerFunc {
 		log.Info().Caller().Str("username", username).Msgf("received request on: /getPublicKey")
 
 		Cpoint := C.host_get_pubkey()
-		p := point{
-			X: Cpoint.x,
-			Y: Cpoint.y,
-		}
+		p := point{X: uint64(Cpoint.x), Y: uint64(Cpoint.y)}
 
 		return c.JSON(http.StatusOK, p)
 	}
@@ -175,10 +172,7 @@ func getWalletAddressHandler() echo.HandlerFunc {
 		log.Info().Caller().Str("username", username).Msgf("received request on: /getWalletAddress")
 
 		Cpoint := C.host_get_pubkey()
-		p := point{
-			X: Cpoint.x,
-			Y: Cpoint.y,
-		}
+		p := point{X: uint64(Cpoint.x), Y: uint64(Cpoint.y)}
 
 		pointJSON, err := json.Marshal(p)
 		if err != nil {
@@ -220,10 +214,10 @@ func prepareTransactionHandler() echo.HandlerFunc {
 
 	// Prepare the transaction
 	type prepareTransactionIn struct {
-		PublicKeyX big.Int `json:"public_key_x"`
-		PublicKeyY big.Int `json:"public_key_y"`
-		ToAddress  string  `json:"to_address"`
-		Value      uint    `json:"value"`
+		PublicKeyX uint64 `json:"public_key_x"`
+		PublicKeyY uint64 `json:"public_key_y"`
+		ToAddress  string `json:"to_address"`
+		Value      uint   `json:"value"`
 	}
 
 	return func(c echo.Context) error {
@@ -238,10 +232,7 @@ func prepareTransactionHandler() echo.HandlerFunc {
 
 		// Get the public key from the enclave
 		Cpoint := C.host_get_pubkey()
-		p := point{
-			X: Cpoint.x,
-			Y: Cpoint.y,
-		}
+		p := point{X: uint64(Cpoint.x), Y: uint64(Cpoint.y)}
 
 		pointJSON, err := json.Marshal(p)
 		if err != nil {
