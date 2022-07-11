@@ -63,6 +63,7 @@ func (s *Server) EnclaveCreator() echo.MiddlewareFunc {
 func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 	appDeploymentsClient := s.clientset.AppsV1().Deployments("default")
 	secret, _ := s.clientset.CoreV1().Secrets("default").Get(ctx, "regcred", metav1.GetOptions{})
+	backendip, _ := s.clientset.CoreV1().Services("default").Get(ctx, "backend-service", metav1.GetOptions{})
 	randsubstr, _ := randomHex(16)
 	randsubstr = "enclave" + randsubstr
 	appDeployment := &appsv1.Deployment{
@@ -112,6 +113,12 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 								{
 									Name:       "/dev/sgx_provision",
 									DevicePath: "/dev/sgx_provision",
+								},
+							},
+							Env: []apiv1.EnvVar{
+								{
+									Name:  "BACKEND_IP",
+									Value: fmt.Sprintf("%s:%d", backendip.Spec.ClusterIP, backendip.Spec.Ports[0].Port),
 								},
 							},
 							Ports: []apiv1.ContainerPort{

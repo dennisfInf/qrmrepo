@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  labels:
+    app: backend
+spec:
+  selector:
+    matchLabels:
+      app: backend
+      tier: backend
+      track: stable
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: backend
+          image: 'IMGPLACEHOLDER'
+          env:
+          - name: INFURAADDRESS
+            value: 'https://ropsten.infura.io/v3/060f31fbb4f54482824d102d22276b4a'
+          - name: SERVERPORT
+            value: '2531'
+          ports:
+          - containerPort: 2531
+      nodeSelector:
+        disktype: db
