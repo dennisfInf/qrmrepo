@@ -360,7 +360,8 @@ void enclave_get_pubkey(point *pubkey, data_t *sealed_data) {
   }
 }
 
-void enclave_sign_sha256(data_t *hash_data, data_t *sealed_bin, data_t *sig_data) {
+void enclave_sign_sha256(data_t *hash_data, data_t *sealed_bin,
+                         data_t *sig_data) {
   if (hash_data == NULL || sealed_bin == NULL) {
     return;
   }
@@ -396,4 +397,55 @@ void enclave_sign_sha256(data_t *hash_data, data_t *sealed_bin, data_t *sig_data
 
   sig_data->blob = sig;
   sig_data->size = siglen;
+}
+
+bool enclave_verify_secp256k1_sig(data_t *sealed_pubkey, data_t *sig_data,
+                                  data_t *sig_hash) {
+  printf("ENCLAVE: enclave_verify_secp256k1()");
+  point pkey{0, 0};
+
+  Seal seal_bin{OE_SEAL_POLICY_PRODUCT, PATH_WALLET_PUBKEY};
+
+  enclave_get_pubkey(&pkey, sealed_pubkey);
+
+  mbedtls_ecdsa_context ctx;
+  mbedtls_ecp_group grp;
+  mbedtls_ecp_point p;
+  mbedtls_ecdsa_init(&ctx);
+  mbedtls_ecp_group_init(&grp);
+  mbedtls_ecp_point_init(&p);
+  mbedtls_ecp_group_load(&grp, MBEDTLS_ECP_DP_SECP256K1);
+  int ret = 0;
+  unsigned char *data = NULL;
+  size_t data_size = 0;
+  Seal seal{OE_SEAL_POLICY_PRODUCT, PATH_WALLET_PUBKEY};
+  if (seal.unseal(sealed_pubkey, &data, &data_size) == 0) {
+    if ((ret = mbedtls_ecp_point_read_binary(&grp, &p, data, data_size)) != 0) {
+      printf(
+          "ENCLAVE: ERROR: mbedtls_ecp_point_read_binary() returned with %d\n",
+          ret);
+    } else {
+      printf("ENCLAVE: x: %lu, y: %lu\n", *p.X.p, *p.Y.p);
+      ctx.grp = grp;
+      ctx.Q = p;
+      if ((ret = mbedtls_ecdsa_read_signature(&ctx, sig_hash->blob,
+                                              sig_hash->size, sig_data->blob,
+                                              sig_data->size)) == OE_OK) {
+        printf("ENCLAVE: Signature OK\n");
+      } else {
+        printf("ENCLAVE: ERROR: Signature invalid\n");
+        printf("\t X: %d,\tY: %d\nHash: ", ctx.Q.X.p, ctx.Q.Y.p);
+
+        for (int i = 0; i < sig_hash->size; ++i) {
+          printf("%u", sig_hash->blob[i]);
+        }
+        printf("\nSignature: ");
+        for (int i = 0; i < sig_data->size; ++i) {
+          printf("%u", sig_data->blob[i]);
+        }
+        printf("\n");
+      }
+    }
+  }
+  return ret == 0;
 }
