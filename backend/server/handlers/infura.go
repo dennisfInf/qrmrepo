@@ -4,13 +4,13 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"github.com/enclaive/backend/config"
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog/log"
 	"math/big"
 	"net/http"
 )
@@ -42,9 +42,12 @@ func (w *InfuraHandler) GetWalletAddress() echo.HandlerFunc {
 	}
 
 	return func(c echo.Context) error {
+		log.Info().Caller().Msg("received call on /getWalletAddress")
+
 		var in input
 		if err := c.Bind(&in); err != nil {
-			return c.String(http.StatusBadRequest, "invalid json")
+			log.Info().Caller().Err(err).Msg("received invalid json")
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid json")
 		}
 
 		pubkey := ecdsa.PublicKey{
@@ -54,6 +57,8 @@ func (w *InfuraHandler) GetWalletAddress() echo.HandlerFunc {
 		}
 
 		address := crypto.PubkeyToAddress(pubkey)
+
+		log.Info().Caller().Msgf("sending out wallet address: %s", address.String())
 
 		return c.JSON(http.StatusOK, output{
 			Address: address.String(),
@@ -71,19 +76,22 @@ func (w *InfuraHandler) PrepareTransaction() echo.HandlerFunc {
 
 	type output struct {
 		Hash      [32]byte `json:"hash"`
-		ChainID   big.Int  `json:"chain_id"`
+		ChainID   *big.Int `json:"chain_id"`
 		Nonce     uint64   `json:"nonce"`
-		GasFeeCap big.Int  `json:"gas_fee_cap"`
-		GasTipCap big.Int  `json:"gas_tip_cap"`
+		GasFeeCap *big.Int `json:"gas_fee_cap"`
+		GasTipCap *big.Int `json:"gas_tip_cap"`
 		Gas       uint64   `json:"gas"`
 		ToAddress string   `json:"to_address"`
-		Value     big.Int  `json:"value"`
+		Value     *big.Int `json:"value"`
 		Data      []byte   `json:"data"`
 	}
 
 	return func(c echo.Context) error {
+		log.Info().Caller().Msg("received call on /prepareTransaction")
+
 		var in input
 		if err := c.Bind(&in); err != nil {
+			log.Info().Caller().Err(err).Msg("received invalid json")
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid json")
 		}
 
@@ -97,38 +105,21 @@ func (w *InfuraHandler) PrepareTransaction() echo.HandlerFunc {
 
 		nonce, err := w.client.PendingNonceAt(c.Request().Context(), fromAddress)
 		if err != nil {
-			return c.String(http.StatusInternalServerError, err.Error())
+			log.Error().Caller().Err(err).Msg("failed to get pending nonce")
+			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 		}
 
 		toAddress := common.HexToAddress(in.ToAddress)
 		var data []byte
 
-		estimatedGas, err := w.client.EstimateGas(c.Request().Context(), ethereum.CallMsg{
-			To:   &toAddress,
-			Data: []byte{0},
-		})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-		}
-
-		gasLimit := uint64(float64(estimatedGas) * 1.30) // in units
-
-		tipCap, err := w.client.SuggestGasTipCap(c.Request().Context()) // maxPriorityFeePerGas in Gwei
-		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-		}
-
-		feeCap, err := w.client.SuggestGasPrice(c.Request().Context()) // maxFeePerGas in Gwei
-		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-		}
-
-		//tipCap := big.NewInt(20000000000)                // maxPriorityFeePerGas = 20 Gwei
-		//feeCap := big.NewInt(200000000000)               // maxFeePerGas = 200 Gwei
+		gasLimit := uint64(21000)         // in units
+		tipCap := big.NewInt(2000000000)  // maxPriorityFeePerGas = 2 Gwei
+		feeCap := big.NewInt(20000000000) // maxFeePerGas = 20 Gwei
 
 		chainID, err := w.client.NetworkID(c.Request().Context())
 		if err != nil {
-			return c.String(http.StatusInternalServerError, err.Error())
+			log.Error().Caller().Err(err).Msg("failed to get chainID")
+			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 		}
 
 		tx := types.NewTx(&types.DynamicFeeTx{
@@ -146,13 +137,13 @@ func (w *InfuraHandler) PrepareTransaction() echo.HandlerFunc {
 
 		return c.JSON(http.StatusOK, output{
 			Hash:      h,
-			ChainID:   *chainID,
+			ChainID:   chainID,
 			Nonce:     nonce,
-			GasFeeCap: *feeCap,
-			GasTipCap: *tipCap,
+			GasFeeCap: feeCap,
+			GasTipCap: tipCap,
 			Gas:       gasLimit,
 			ToAddress: in.ToAddress,
-			Value:     in.Value,
+			Value:     &in.Value,
 			Data:      data,
 		})
 	}
@@ -161,7 +152,7 @@ func (w *InfuraHandler) PrepareTransaction() echo.HandlerFunc {
 func (w *InfuraHandler) SendTransaction() echo.HandlerFunc {
 	type input struct {
 		Hash      [32]byte `json:"hash"`
-		Signature []byte   `json:"signature"`
+		Signature [65]byte `json:"signature"`
 		ChainID   big.Int  `json:"chain_id"`
 		Nonce     uint64   `json:"nonce"`
 		GasFeeCap big.Int  `json:"gas_fee_cap"`
@@ -173,9 +164,12 @@ func (w *InfuraHandler) SendTransaction() echo.HandlerFunc {
 	}
 
 	return func(c echo.Context) error {
+		log.Info().Caller().Msg("received call on /sendTransaction")
+
 		var in input
 		if err := c.Bind(&in); err != nil {
-			return c.String(http.StatusBadRequest, "invalid json")
+			log.Info().Caller().Err(err).Msg("received invalid json")
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid json")
 		}
 
 		toAddress := common.HexToAddress(in.ToAddress)
@@ -191,11 +185,20 @@ func (w *InfuraHandler) SendTransaction() echo.HandlerFunc {
 			Data:      in.Data,
 		})
 
-		signedTx, err := tx.WithSignature(types.LatestSignerForChainID(&in.ChainID), in.Signature)
+		signedTx, err := tx.WithSignature(types.LatestSignerForChainID(&in.ChainID), in.Signature[:])
 		if err != nil {
-			return c.String(http.StatusInternalServerError, err.Error())
+			log.Error().Caller().Err(err).Msg("failed to create signedTx")
+			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 		}
 
-		return w.client.SendTransaction(c.Request().Context(), signedTx)
+		err = w.client.SendTransaction(c.Request().Context(), signedTx)
+		if err != nil {
+			log.Error().Caller().Err(err).Msg("failed to send transaction")
+			return echo.NewHTTPError(http.StatusInternalServerError, "failed to send transaction")
+		}
+
+		log.Info().Caller().Msgf("sending transaction with hash: %s", signedTx.Hash().Hex())
+
+		return nil
 	}
 }
