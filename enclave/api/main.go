@@ -28,6 +28,19 @@ import (
 
 type prepareTransactionOut struct {
 	Hash      [32]byte `json:"hash"`
+	Signature [65]byte `json:"signature"`
+	ChainID   *big.Int `json:"chain_id"`
+	Nonce     uint64   `json:"nonce"`
+	GasFeeCap *big.Int `json:"gas_fee_cap"`
+	GasTipCap *big.Int `json:"gas_tip_cap"`
+	Gas       uint64   `json:"gas"`
+	ToAddress string   `json:"to_address"`
+	Value     *big.Int `json:"value"`
+	Data      []byte   `json:"data"`
+}
+
+type prepareTransactionContainer struct {
+	Hash      [32]byte `json:"hash"`
 	Signature []byte   `json:"signature"`
 	ChainID   big.Int  `json:"chain_id"`
 	Nonce     uint64   `json:"nonce"`
@@ -53,7 +66,7 @@ var (
 	session             *webauthn.SessionData
 	user                User
 	backendIPAddr       string
-	preparedTransaction prepareTransactionOut
+	preparedTransaction prepareTransactionContainer
 )
 
 func registerInitializeHandler() echo.HandlerFunc {
@@ -175,30 +188,10 @@ func getWalletAddressHandler() echo.HandlerFunc {
 		Cpoint := C.host_get_pubkey()
 		p := point{X: uint64(Cpoint.x), Y: uint64(Cpoint.y)}
 
-		pointJSON, err := json.Marshal(p)
-		if err != nil {
-			log.Error().Caller().Err(err).Msg("failed to marshal point")
-			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
-		}
-
-		log.Info().Caller().Msgf("requesting address for point: %s", pointJSON)
-		req, err := http.NewRequest("GET", backendIPAddr+"/getWalletAddress", bytes.NewBuffer(pointJSON))
-		if err != nil {
-			log.Error().Caller().Err(err).Msg("failed to make new request")
-			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
-		}
-		req.Header.Set("Content-Type", "application/json")
-
-		res, err := http.DefaultClient.Do(req)
-		if err != nil {
-			log.Error().Caller().Err(err).Msg("request to backend failed")
-			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
-		}
-		defer res.Body.Close()
-
 		var address walletAddress
-		if err := json.NewDecoder(res.Body).Decode(&address); err != nil {
-			log.Error().Caller().Err(err).Msg("failed to decode backend response")
+		err := doRequest(http.MethodGet, backendIPAddr+"/getWalletAddress", &p, &address)
+		if err != nil {
+			log.Error().Caller().Err(err).Msg("failed to get wallet address")
 			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 		}
 
@@ -235,30 +228,10 @@ func prepareTransactionHandler() echo.HandlerFunc {
 		Cpoint := C.host_get_pubkey()
 		p := point{X: uint64(Cpoint.x), Y: uint64(Cpoint.y)}
 
-		pointJSON, err := json.Marshal(p)
-		if err != nil {
-			log.Error().Caller().Err(err).Msg("failed to marshal point")
-			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
-		}
-
-		log.Info().Caller().Msgf("requesting address for point: %s", pointJSON)
-		req, err := http.NewRequest("GET", backendIPAddr+"/getWalletAddress", bytes.NewBuffer(pointJSON))
-		if err != nil {
-			log.Error().Caller().Err(err).Msg("failed to make new request")
-			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
-		}
-		req.Header.Set("Content-Type", "application/json")
-
-		res, err := http.DefaultClient.Do(req)
-		if err != nil {
-			log.Error().Caller().Err(err).Msg("request to backend failed")
-			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
-		}
-		defer res.Body.Close()
-
 		var address walletAddress
-		if err := json.NewDecoder(res.Body).Decode(&address); err != nil {
-			log.Error().Caller().Err(err).Msg("failed to decode backend response")
+		err := doRequest(http.MethodGet, backendIPAddr+"/getWalletAddress", &p, &address)
+		if err != nil {
+			log.Error().Caller().Err(err).Msg("failed to get wallet address")
 			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 		}
 
@@ -269,28 +242,9 @@ func prepareTransactionHandler() echo.HandlerFunc {
 			in.Amount,
 		}
 
-		prepTranInJSON, err := json.Marshal(prepTranIn)
+		err = doRequest(http.MethodPost, backendIPAddr+"/prepareTransaction", &prepTranIn, &preparedTransaction)
 		if err != nil {
-			log.Error().Caller().Err(err).Msg("failed to marshal prepareTransactionIn")
-			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
-		}
-
-		reqPrepTran, err := http.NewRequest("POST", backendIPAddr+"/prepareTransaction", bytes.NewBuffer(prepTranInJSON))
-		if err != nil {
-			log.Error().Caller().Err(err).Msg("failed to create prepareTransaction request")
-			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
-		}
-		reqPrepTran.Header.Set("Content-Type", "application/json")
-
-		res, err = http.DefaultClient.Do(reqPrepTran)
-		if err != nil {
-			log.Error().Caller().Err(err).Msg("request to backend failed")
-			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
-		}
-		defer res.Body.Close()
-
-		if err := json.NewDecoder(res.Body).Decode(&preparedTransaction); err != nil {
-			log.Error().Caller().Err(err).Msg("failed to decode backend response")
+			log.Error().Caller().Err(err).Msg("failed to prepare transaction")
 			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 		}
 
@@ -302,7 +256,7 @@ func prepareTransactionHandler() echo.HandlerFunc {
 
 		//	session = webSession
 
-		return c.JSON(http.StatusOK, "")
+		return c.String(http.StatusOK, "prepared successfully")
 	}
 }
 
@@ -326,36 +280,64 @@ func sendTransactionHandler() echo.HandlerFunc {
 		Csig := C.host_sign_secp256k1((*C.uchar)(C.CBytes(preparedTransaction.Hash[:])), C.uint(len(preparedTransaction.Hash)))
 		preparedTransaction.Signature = C.GoBytes(unsafe.Pointer(Csig), 73)
 
-		preparedTransactionJSON, err := json.Marshal(preparedTransaction)
-		if err != nil {
-			log.Error().Caller().Err(err).Msg("failed to marshal prepareTransactionIn")
-			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
-		}
+		//TODO fix signature length
 
-		reqPrepTran, err := http.NewRequest("POST", backendIPAddr+"/sendTransaction", bytes.NewBuffer(preparedTransactionJSON))
-		if err != nil {
-			log.Printf("Couldn't initialize a new request, %s\n", err.Error())
-			return c.String(http.StatusInternalServerError, err.Error())
-		}
-		reqPrepTran.Header.Set("Content-Type", "application/preparedTransactionJSON")
-
-		res, err := http.DefaultClient.Do(reqPrepTran)
-		if err != nil {
-			log.Error().Caller().Err(err).Msg("request to backend failed")
-			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
-		}
-		defer res.Body.Close()
+		var sigArray [65]byte
+		copy(sigArray[:], preparedTransaction.Signature[0:65])
 
 		var out output
-		if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
-			log.Error().Caller().Err(err).Msg("failed to decode response")
+		err := doRequest(http.MethodPost, backendIPAddr+"/sendTransaction", &prepareTransactionOut{
+			Hash:      preparedTransaction.Hash,
+			Signature: sigArray,
+			ChainID:   &preparedTransaction.ChainID,
+			Nonce:     preparedTransaction.Nonce,
+			GasFeeCap: &preparedTransaction.GasFeeCap,
+			GasTipCap: &preparedTransaction.GasTipCap,
+			Gas:       preparedTransaction.Gas,
+			ToAddress: preparedTransaction.ToAddress,
+			Value:     &preparedTransaction.Value,
+			Data:      preparedTransaction.Data,
+		}, &out)
+		if err != nil {
+			log.Error().Caller().Err(err).Msg("failed to send transaction")
 			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 		}
 
-		fmt.Printf("transaction hash is: %s", out.TransactionHash)
+		log.Info().Caller().Msgf("transaction hash is: %s", out.TransactionHash)
 
 		return c.JSON(http.StatusOK, out)
 	}
+}
+
+func doRequest(method string, url string, payload any, out any) error {
+	payloadJSON, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("failed to marshal payload: %w", err)
+	}
+
+	log.Info().Caller().Msgf("sending payload %s to %s\n", payloadJSON, url)
+
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(payloadJSON))
+	if err != nil {
+		return fmt.Errorf("couldn't initialize a new request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("request failed: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("received error status: %d", res.StatusCode)
+	}
+
+	if err := json.NewDecoder(res.Body).Decode(out); err != nil {
+		return fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return nil
 }
 
 func main() {
