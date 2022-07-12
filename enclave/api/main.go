@@ -12,6 +12,7 @@ import "C"
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"math/big"
@@ -217,7 +218,7 @@ func prepareTransactionHandler() echo.HandlerFunc {
 		PublicKeyX uint64 `json:"public_key_x"`
 		PublicKeyY uint64 `json:"public_key_y"`
 		ToAddress  string `json:"to_address"`
-		Value      uint64   `json:"value"`
+		Value      uint64 `json:"value"`
 	}
 
 	return func(c echo.Context) error {
@@ -281,26 +282,25 @@ func prepareTransactionHandler() echo.HandlerFunc {
 		}
 		reqPrepTran.Header.Set("Content-Type", "application/json")
 
-		res, err = http.DefaultClient.Do(req)
+		res, err = http.DefaultClient.Do(reqPrepTran)
 		if err != nil {
 			log.Error().Caller().Err(err).Msg("request to backend failed")
 			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 		}
 		defer res.Body.Close()
 
-		var preparedTransaction prepareTransactionOut
 		if err := json.NewDecoder(res.Body).Decode(&preparedTransaction); err != nil {
 			log.Error().Caller().Err(err).Msg("failed to decode backend response")
 			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 		}
 
-	//	options, webSession, err := webAuthn.BeginTransaction(&user, preparedTransaction.Hash)
-	//	if err != nil {
-	//		log.Error().Caller().Err(err).Msg("failed to prepare webauthn transaction")
-	//		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
-	//	}
+		//	options, webSession, err := webAuthn.BeginTransaction(&user, preparedTransaction.Hash)
+		//	if err != nil {
+		//		log.Error().Caller().Err(err).Msg("failed to prepare webauthn transaction")
+		//		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
+		//	}
 
-	//	session = webSession
+		//	session = webSession
 
 		return c.JSON(http.StatusOK, "")
 	}
@@ -308,6 +308,10 @@ func prepareTransactionHandler() echo.HandlerFunc {
 
 // Receives a request with signed payload incl. challenge
 func sendTransactionHandler() echo.HandlerFunc {
+	type output struct {
+		TransactionHash string `json:"transaction_hash"`
+	}
+
 	return func(c echo.Context) error {
 		username := c.Request().Header.Get("x-username")
 		log.Info().Caller().Str("username", username).Msgf("received request on: /prepareTransaction")
@@ -342,7 +346,15 @@ func sendTransactionHandler() echo.HandlerFunc {
 		}
 		defer res.Body.Close()
 
-		return c.String(http.StatusOK, "transaction successful")
+		var out output
+		if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
+			log.Error().Caller().Err(err).Msg("failed to decode response")
+			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
+		}
+
+		fmt.Printf("transaction hash is: %s", out.TransactionHash)
+
+		return c.JSON(http.StatusOK, out)
 	}
 }
 
