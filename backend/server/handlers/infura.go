@@ -163,6 +163,10 @@ func (w *InfuraHandler) SendTransaction() echo.HandlerFunc {
 		Data      []byte   `json:"data"`
 	}
 
+	type output struct {
+		TransactionHash string `json:"transaction_hash"`
+	}
+
 	return func(c echo.Context) error {
 		log.Info().Caller().Msg("received call on /sendTransaction")
 
@@ -199,6 +203,8 @@ func (w *InfuraHandler) SendTransaction() echo.HandlerFunc {
 
 		log.Info().Caller().Msgf("sending transaction with hash: %s", signedTx.Hash().Hex())
 
-		return nil
+		return c.JSON(http.StatusOK, output{
+			signedTx.Hash().Hex(),
+		})
 	}
 }
