@@ -27,7 +27,7 @@ spec:
           - name: API_URL
             value: '3.127.97.245'
           - name: API_PORT
-            value: '30400'
+            value: '30050'
           ports:
           - containerPort: 80
       nodeSelector:

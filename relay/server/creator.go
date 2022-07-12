@@ -10,6 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
+	resource "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"net/http"
@@ -66,6 +67,10 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 	backendip, _ := s.clientset.CoreV1().Services("default").Get(ctx, "backend-service", metav1.GetOptions{})
 	randsubstr, _ := randomHex(16)
 	randsubstr = "enclave" + randsubstr
+	quantity, quantityErr := resource.ParseQuantity("512Ki")
+	if quantityErr != nil {
+		log.Error().Caller().Err(quantityErr).Msg("failed to parse quantity")
+	}
 	appDeployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
@@ -105,16 +110,6 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 									MountPath: "/dev/sgx",
 								},
 							},
-							VolumeDevices: []apiv1.VolumeDevice{
-								{
-									Name:       "/dev/sgx_enclave",
-									DevicePath: "/dev/sgx_enclave",
-								},
-								{
-									Name:       "/dev/sgx_provision",
-									DevicePath: "/dev/sgx_provision",
-								},
-							},
 							Env: []apiv1.EnvVar{
 								{
 									Name:  "BACKEND_IP",
@@ -124,6 +119,11 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 							Ports: []apiv1.ContainerPort{
 								{
 									ContainerPort: 2533,
+								},
+							},
+							Resources: apiv1.ResourceRequirements{
+								Limits: apiv1.ResourceList{
+									"sgx.intel.com/epc": quantity,
 								},
 							},
 						},
