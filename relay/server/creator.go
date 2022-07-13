@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/enclaive/relay/models"
 	"github.com/labstack/echo/v4"
@@ -16,6 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -174,7 +176,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, string, error) {
 		return "", "", err
 	}
 
-	return fmt.Sprintf("%s:%d", service.Spec.ClusterIP, service.Spec.Ports[0].Port), appResult.GetObjectMeta().GetGenerateName(), nil
+	return fmt.Sprintf("%s:%d", service.Spec.ClusterIP, service.Spec.Ports[0].Port), appResult.GetObjectMeta().GetName(), nil
 }
 
 func int32Ptr(i int32) *int32 { return &i }
@@ -191,17 +193,23 @@ func randomHex(n int) (string, error) {
 // currently running
 func isPodRunning(ctx context.Context, c kubernetes.Interface, podName string) wait.ConditionFunc {
 	return func() (bool, error) {
-		pod, err := c.CoreV1().Pods(NAMESPACE).Get(ctx, podName, metav1.GetOptions{})
+		pods, err := c.CoreV1().Pods(NAMESPACE).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			return false, err
 		}
 
-		switch pod.Status.Phase {
-		case apiv1.PodRunning:
-			return true, nil
-		default:
-			return false, nil
+		for _, pod := range pods.Items {
+			if strings.HasPrefix(pod.GetName(), podName) {
+				switch pod.Status.Phase {
+				case apiv1.PodRunning:
+					return true, nil
+				default:
+					return false, nil
+				}
+			}
 		}
+
+		return false, errors.New("pod does not exist")
 	}
 }
 
