@@ -160,7 +160,9 @@ all other nodes except the master-node should be labeled with:
 ```bash
 kubectl label node azurenode disktype=db
 ``` 
-**5.4** Now your cluster is all set!
+**5.4** Follow this tutorial to enable sgx-plugins in your cluster: https://intel.github.io/intel-device-plugins-for-kubernetes/cmd/sgx_plugin/README.html
+**5.5** Now your cluster is all set!
+
 ## To be done on AWS and Github if the pipeline is used. 
 NOTE: Notice that, if the pipeline is not used, the image names of the dockerfiles and the environment variables have to be manually set to the right values. 
 
@@ -182,7 +184,8 @@ Here you can also specify the password of the database, by adding the variablena
 ```bash
 cat $HOME/.kube/config
 ``` 
-
 **6.5** Now everything is set and you can execute the pipeline to deploy the application! 
+
+NOTE: If the application isn't running locally, then you have to include your own TLS certificate in the frontend and also have to change the domain name in the enclave.
 
  
