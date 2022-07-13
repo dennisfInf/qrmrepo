@@ -361,8 +361,8 @@ func main() {
 	log.Info().Caller().Msg("creating the webauthn config")
 	webAuthn, err = webauthn.New(&webauthn.Config{
 		RPDisplayName: "enclaive",
-		RPID:          "elonmaskwallet.com",
-		RPOrigin:      "https://elonmaskwallet.com",
+		RPID:          "elonmaskwallet.de",
+		RPOrigin:      "https://elonmaskwallet.de",
 	})
 	if err != nil {
 		log.Fatal().Caller().Err(err).Msg("failed to create webauthn config")
