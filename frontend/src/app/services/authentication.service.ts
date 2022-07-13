@@ -106,7 +106,7 @@ export class AuthenticationService {
 
   async transactionFinalize(username : string, token : any) : Promise<string> {
     return axios.post(
-      environment.routes.authenticationService + "/transaction/initialize",
+      environment.routes.authenticationService + "/transaction/finalize",
       token
       ,
       {
