@@ -200,7 +200,6 @@ func isPodRunning(ctx context.Context, c kubernetes.Interface, podName string) w
 
 		for _, pod := range pods.Items {
 			if strings.HasPrefix(pod.GetName(), podName) {
-				fmt.Println("found match")
 				switch pod.Status.Phase {
 				case apiv1.PodRunning:
 					return true, nil
