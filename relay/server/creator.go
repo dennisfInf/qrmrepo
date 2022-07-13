@@ -46,7 +46,7 @@ func (s *Server) EnclaveCreator() echo.MiddlewareFunc {
 
 				c.Set("address", lookup.EnclaveAddress)
 
-				time.Sleep(10 * time.Second)
+				time.Sleep(20 * time.Second)
 
 				return next(c)
 
@@ -118,7 +118,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 							},
 							Ports: []apiv1.ContainerPort{
 								{
-									ContainerPort: 2533,
+									ContainerPort: 80,
 								},
 							},
 							Resources: apiv1.ResourceRequirements{
@@ -172,7 +172,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 				{
 					Protocol:   "TCP",
 					Port:       2534,
-					TargetPort: intstr.FromInt(2533),
+					TargetPort: intstr.FromInt(80),
 				},
 			},
 		},
