@@ -103,7 +103,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "server-volume",
-									MountPath: "/server",
+									MountPath: "./server",
 								},
 								{
 									Name:      "sgx-volume",
