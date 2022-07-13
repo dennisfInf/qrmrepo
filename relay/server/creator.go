@@ -100,16 +100,16 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 						{
 							Name:  "enclave",
 							Image: s.cfg.Image,
-							VolumeMounts: []apiv1.VolumeMount{
-								{
-									Name:      "server-volume",
-									MountPath: "./server",
-								},
-								{
-									Name:      "sgx-volume",
-									MountPath: "/dev/sgx",
-								},
-							},
+							/*							VolumeMounts: []apiv1.VolumeMount{
+														{
+															Name:      "user-",
+															MountPath: "/server",
+														},
+														{
+															Name:      "sgx-volume",
+															MountPath: "/dev/sgx",
+														},
+													},*/
 							Env: []apiv1.EnvVar{
 								{
 									Name:  "BACKEND_IP",
@@ -132,19 +132,19 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 					NodeSelector: map[string]string{
 						"disktype": "ssd",
 					},
-					Volumes: []apiv1.Volume{
-						{
-							Name: "server-volume",
-							VolumeSource: apiv1.VolumeSource{
-								EmptyDir: &apiv1.EmptyDirVolumeSource{},
-							},
-						},
-						{
-							Name: "sgx-volume",
-							VolumeSource: apiv1.VolumeSource{
-								EmptyDir: &apiv1.EmptyDirVolumeSource{}},
-						},
-					},
+					/*					Volumes: []apiv1.Volume{
+										{
+											Name: "server-volume",
+											VolumeSource: apiv1.VolumeSource{
+												EmptyDir: &apiv1.EmptyDirVolumeSource{},
+											},
+										},
+										{
+											Name: "sgx-volume",
+											VolumeSource: apiv1.VolumeSource{
+												EmptyDir: &apiv1.EmptyDirVolumeSource{}},
+										},
+									},*/
 				},
 			},
 		},
