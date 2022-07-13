@@ -78,10 +78,8 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, string, error) {
 	backendip, _ := s.clientset.CoreV1().Services(NAMESPACE).Get(ctx, "backend-service", metav1.GetOptions{})
 	randsubstr, _ := randomHex(16)
 	randsubstr = "enclave" + randsubstr
-	quantity, quantityErr := resource.ParseQuantity("512Ki")
-	if quantityErr != nil {
-		log.Error().Caller().Err(quantityErr).Msg("failed to parse quantity")
-	}
+	quantity, _ := resource.ParseQuantity("512Ki")
+
 	appDeployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
@@ -176,7 +174,7 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, string, error) {
 		return "", "", err
 	}
 
-	return fmt.Sprintf("%s:%d", service.Spec.ClusterIP, service.Spec.Ports[0].Port), appResult.GetObjectMeta().GetName(), nil
+	return fmt.Sprintf("%s:%d", service.Spec.ClusterIP, service.Spec.Ports[0].Port), appResult.GetObjectMeta().GetGenerateName(), nil
 }
 
 func int32Ptr(i int32) *int32 { return &i }
