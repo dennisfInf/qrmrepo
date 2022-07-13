@@ -10,11 +10,18 @@ import (
 	"github.com/rs/zerolog/log"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	resource "k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/kubernetes"
 	"net/http"
 	"time"
+)
+
+const (
+	NAMESPACE = "default"
+	TIMEOUT   = 180 * time.Second
 )
 
 func (s *Server) EnclaveCreator() echo.MiddlewareFunc {
@@ -25,10 +32,10 @@ func (s *Server) EnclaveCreator() echo.MiddlewareFunc {
 
 			if s.repoManager.IsEmptyResultSetError(err) {
 				log.Info().Caller().Msg("spawning new enclave")
-				ip, err := s.DeployEnclave(c.Request().Context())
+				ip, podName, err := s.DeployEnclave(c.Request().Context())
 				if err != nil {
 					log.Error().Caller().Err(err).Msg("failed to spawn enclave")
-					return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+					return echo.NewHTTPError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 				}
 
 				lookup = models.Lookup{
@@ -39,32 +46,36 @@ func (s *Server) EnclaveCreator() echo.MiddlewareFunc {
 				err = s.repoManager.Lookup().Set(c.Request().Context(), lookup)
 				if err != nil {
 					log.Error().Caller().Err(err).Msg("failed to save enclave ip")
-					return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+					return echo.NewHTTPError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 				}
 
 				log.Info().Caller().Msgf("registered new enclave: %v", lookup)
 
 				c.Set("address", lookup.EnclaveAddress)
 
-				time.Sleep(20 * time.Second)
+				//time.Sleep(20 * time.Second)
+				if err := waitForPodRunning(c.Request().Context(), s.clientset, podName); err != nil {
+					log.Error().Caller().Err(err).Msg("enclave failed to start")
+					return echo.NewHTTPError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+				}
 
 				return next(c)
 
 			} else if err != nil {
 				log.Error().Caller().Err(err).Msg("failed to get lookup from database")
-				return c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+				return echo.NewHTTPError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 			} else {
 				log.Info().Caller().Err(err).Msg("user tried to register an already used account")
-				return c.String(http.StatusBadRequest, "username is already taken")
+				return echo.NewHTTPError(http.StatusBadRequest, "username is already taken")
 			}
 		}
 	}
 }
 
-func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
-	appDeploymentsClient := s.clientset.AppsV1().Deployments("default")
-	secret, _ := s.clientset.CoreV1().Secrets("default").Get(ctx, "regcred", metav1.GetOptions{})
-	backendip, _ := s.clientset.CoreV1().Services("default").Get(ctx, "backend-service", metav1.GetOptions{})
+func (s *Server) DeployEnclave(ctx context.Context) (string, string, error) {
+	appDeploymentsClient := s.clientset.AppsV1().Deployments(NAMESPACE)
+	secret, _ := s.clientset.CoreV1().Secrets(NAMESPACE).Get(ctx, "regcred", metav1.GetOptions{})
+	backendip, _ := s.clientset.CoreV1().Services(NAMESPACE).Get(ctx, "backend-service", metav1.GetOptions{})
 	randsubstr, _ := randomHex(16)
 	randsubstr = "enclave" + randsubstr
 	quantity, quantityErr := resource.ParseQuantity("512Ki")
@@ -100,16 +111,6 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 						{
 							Name:  "enclave",
 							Image: s.cfg.Image,
-							/*							VolumeMounts: []apiv1.VolumeMount{
-														{
-															Name:      "user-",
-															MountPath: "/server",
-														},
-														{
-															Name:      "sgx-volume",
-															MountPath: "/dev/sgx",
-														},
-													},*/
 							Env: []apiv1.EnvVar{
 								{
 									Name:  "BACKEND_IP",
@@ -132,19 +133,6 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 					NodeSelector: map[string]string{
 						"disktype": "ssd",
 					},
-					/*					Volumes: []apiv1.Volume{
-										{
-											Name: "server-volume",
-											VolumeSource: apiv1.VolumeSource{
-												EmptyDir: &apiv1.EmptyDirVolumeSource{},
-											},
-										},
-										{
-											Name: "sgx-volume",
-											VolumeSource: apiv1.VolumeSource{
-												EmptyDir: &apiv1.EmptyDirVolumeSource{}},
-										},
-									},*/
 				},
 			},
 		},
@@ -152,9 +140,9 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 
 	appResult, err := appDeploymentsClient.Create(ctx, appDeployment, metav1.CreateOptions{})
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	serviceDeploymentsClient := s.clientset.CoreV1().Services("default")
+	serviceDeploymentsClient := s.clientset.CoreV1().Services(NAMESPACE)
 
 	serviceDeployment := &apiv1.Service{
 		TypeMeta: metav1.TypeMeta{
@@ -180,15 +168,15 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, error) {
 
 	serviceResult, err := serviceDeploymentsClient.Create(ctx, serviceDeployment, metav1.CreateOptions{})
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	service, err := s.clientset.CoreV1().Services("default").Get(ctx, serviceResult.GetObjectMeta().GetName(), metav1.GetOptions{})
+	service, err := s.clientset.CoreV1().Services(NAMESPACE).Get(ctx, serviceResult.GetObjectMeta().GetName(), metav1.GetOptions{})
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return fmt.Sprintf("%s:%d", service.Spec.ClusterIP, service.Spec.Ports[0].Port), nil
+	return fmt.Sprintf("%s:%d", service.Spec.ClusterIP, service.Spec.Ports[0].Port), appResult.GetObjectMeta().GetName(), nil
 }
 
 func int32Ptr(i int32) *int32 { return &i }
@@ -199,4 +187,28 @@ func randomHex(n int) (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(bytes), nil
+}
+
+// return a condition function that indicates whether the given pod is
+// currently running
+func isPodRunning(ctx context.Context, c kubernetes.Interface, podName string) wait.ConditionFunc {
+	return func() (bool, error) {
+		pod, err := c.CoreV1().Pods(NAMESPACE).Get(ctx, podName, metav1.GetOptions{})
+		if err != nil {
+			return false, err
+		}
+
+		switch pod.Status.Phase {
+		case apiv1.PodRunning:
+			return true, nil
+		default:
+			return false, nil
+		}
+	}
+}
+
+// Poll up to timeout seconds for pod to enter running state.
+// Returns an error if the pod never enters the running state.
+func waitForPodRunning(ctx context.Context, c kubernetes.Interface, podName string) error {
+	return wait.PollImmediate(time.Second, TIMEOUT, isPodRunning(ctx, c, podName))
 }
