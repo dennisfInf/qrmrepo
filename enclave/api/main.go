@@ -379,8 +379,8 @@ func main() {
 	e.POST("/login/finalize", loginFinalizeHandler())
 	e.GET("/getPublicKey", getPublicKeyHandler())
 	e.GET("/getWalletAddress", getWalletAddressHandler())
-	e.POST("/prepareTransaction", prepareTransactionHandler())
-	e.POST("/sendTransaction", sendTransactionHandler())
+	e.POST("/transaction/initialize", prepareTransactionHandler())
+	e.POST("/transaction/finalize", sendTransactionHandler())
 
 	err = e.Start(":80")
 	if err == http.ErrServerClosed {
