@@ -177,8 +177,10 @@ AWSCloudMapFullAccess, AWSApplicationDiscoveryServiceFullAccess, AmazonElasticFi
 ApplicationAutoScalingForAmazonAppStreamAccess, AmazonAPIGatewayPushToCloudWatchLogs, CloudWatchLogsFullAccess, AmazonECS_FullAccess, AmazonRoute53FullAccess, AWSCloudFormationFullAccess. 
 After completion you will get your access key id and the secret. Don't close this window, because otherwise, you will have to create a new user. The secret is only shown once.
 
-**6.3** Navigate to your fork or github repo and add under settings>secrets the access key id with the variable name AWS_ACCESS_KEY_ID and the secret with the variablename AWS_SECRET_ACCESS_KEY. 
+**6.3** Navigate to your fork or github repo and add under settings>secrets the access key id with the variable name AWS_ACCESS_KEY_ID and the secret with the variable name AWS_SECRET_ACCESS_KEY. 
 Here you can also specify the password of the database, by adding the variablename DB_SECRET and specifying a password. 
+
+**6.4** Add your certificate for https to github secrets with the variablename NGINX_CRT and the corresponding private key with the variable name NGINX_KEY.
 
 **6.4** Now the last step is to add the kubeconfig to the repo as the secret KUBE_CONFIG_DATA. To get the contents of the kubeconfig, navigate the master-node and execute the following command: 
 ```bash
