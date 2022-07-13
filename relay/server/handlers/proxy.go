@@ -20,7 +20,7 @@ func (p *ProxyHandler) Proxy(c echo.Context) error {
 	uri, err := url.Parse(fmt.Sprintf("http://%s", address))
 	if err != nil {
 		log.Error().Caller().Err(err).Msg("failed to parse url")
-		return err
+		return echo.NewHTTPError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
 	log.Info().Caller().Msgf("proxying route: %s", uri.String())
