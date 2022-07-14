@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import axios from "axios";
 import { environment } from "../../environments/environment";
 import { JwtHelperService } from "@auth0/angular-jwt";
+import { buffer } from 'rxjs';
 
 function bufferEncode(value:ArrayBuffer) {
   return btoa(String.fromCharCode(...new Uint8Array(value))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "")
@@ -54,6 +55,7 @@ export class AuthenticationService {
           rawId: bufferEncode(token.rawId),
           type: token.type,
           response: {
+            attestationObject: bufferEncode(new ArrayBuffer(0)),
             clientDataJSON: bufferEncode(token.response.clientDataJSON),
           },
         }),
