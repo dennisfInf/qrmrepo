@@ -4,7 +4,7 @@ import { environment } from "../../environments/environment";
 import { JwtHelperService } from "@auth0/angular-jwt";
 
 function bufferEncode(value:ArrayBuffer) {
-  return btoa(String.fromCharCode(...new Uint8Array(value)));
+  return btoa(String.fromCharCode(...new Uint8Array(value))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "")
  /* var u8 = new Uint8Array(value);
   var decoder = new TextDecoder('utf8');
   var b64encoded = btoa(decoder.decode(u8));
@@ -84,6 +84,7 @@ export class AuthenticationService {
 
   async loginFinalize(username: string, token: PublicKeyCredential): Promise<any> {
     console.log(token)
+    const assertionResponse = token.response as AuthenticatorAssertionResponse
     return fetch(environment.routes.authenticationService + "/login/finalize",
     {
       headers: {
@@ -92,7 +93,17 @@ export class AuthenticationService {
         'x-username': username
       },
       method: "POST",
-      body: JSON.stringify(token)
+      body: JSON.stringify({
+        id: token.id,
+        rawId: bufferEncode(token.rawId),
+        type: token.type,
+        response: {
+          authenticatorData: bufferEncode(assertionResponse.authenticatorData),
+          clientDataJSON: bufferEncode(assertionResponse.clientDataJSON),
+          signature: bufferEncode(assertionResponse.signature),
+          userHandle: bufferEncode(assertionResponse.userHandle??new ArrayBuffer(0)),
+        },
+      }),
     })
     /*return axios.post(
       environment.routes.authenticationService + "/login/finalize",
