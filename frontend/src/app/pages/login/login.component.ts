@@ -19,10 +19,7 @@ export class LoginComponent implements OnInit {
   async login() {
     this.authService.loginInitialize(this.username)
       .then(res => {
-        let jsonObj = res.data
-        let userId = jsonObj.user.id as BufferSource
-        let challenge = jsonObj.challenge
-        this.fidoService.getCredential(challenge, userId).then(res => {
+        this.fidoService.getCredential(res.data as PublicKeyCredentialRequestOptions).then(res => {
           this.authService.loginFinalize(this.username, res as PublicKeyCredential).then(res => {
 
             if (this.authService.login(this.name)) {
