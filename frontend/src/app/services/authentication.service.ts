@@ -41,9 +41,7 @@ export class AuthenticationService {
   }
 
   async registerFinalize(username: string, token: PublicKeyCredential): Promise<any> {
-    console.log(token)
     const authAttRes = token.response as AuthenticatorAttestationResponse
-    console.log(authAttRes)
     return fetch(environment.routes.authenticationService + "/register/finalize",
       {
         headers: {

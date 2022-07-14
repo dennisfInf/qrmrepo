@@ -17,9 +17,6 @@ export class LoginComponent implements OnInit {
   async login(username:string) {
     this.authService.loginInitialize(username)
       .then(res => {
-        console.log("moin")
-        console.log("login init")
-        console.log(res.data)
         this.fidoService.getCredential(res.data).then(res => {
           this.authService.loginFinalize(username, res as PublicKeyCredential).then(res => {
 

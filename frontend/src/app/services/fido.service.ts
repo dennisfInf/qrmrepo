@@ -21,8 +21,6 @@ export class FidoService {
 
   async createCredential(publicKeyCred:any): Promise<Credential | null> {
     let user = publicKeyCred.publicKey.user
-    console.log(user)
-    console.log(publicKeyCred.publicKey.challenge)
     let credopts = this.readPublicKeyCredentialCreationOptions(publicKeyCred.publicKey.challenge,user.displayName,user.id,user.name,publicKeyCred)
     let credential = await navigator.credentials.create({publicKey: credopts})
     return credential
@@ -72,8 +70,7 @@ export class FidoService {
 
 
   public async getCredential(data:any):Promise<Credential | null> {
-    console.log("getCredential")
-    data.publicKey.allowCredentials.foreach(function (listItem:any){
+    data.publicKey.allowCredentials.forEach(function (listItem:any){
       listItem.id = bufferDecode(listItem.id)
     });
     let credReqOpts:PublicKeyCredentialRequestOptions = {
