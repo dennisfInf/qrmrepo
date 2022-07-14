@@ -111,6 +111,12 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, string, error) {
 						{
 							Name:  "enclave",
 							Image: s.cfg.Image,
+							VolumeMounts: []apiv1.VolumeMount{
+								{
+									Name:      "user-data",
+									MountPath: "/data/",
+								},
+							},
 							Env: []apiv1.EnvVar{
 								{
 									Name:  "BACKEND_IP",
@@ -127,6 +133,12 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, string, error) {
 									"sgx.intel.com/epc": quantity,
 								},
 							},
+						},
+					},
+					Volumes: []apiv1.Volume{
+						{
+							Name:         "user-data",
+							VolumeSource: apiv1.VolumeSource{EmptyDir: nil},
 						},
 					},
 					ImagePullSecrets: []apiv1.LocalObjectReference{{secret.Name}},
