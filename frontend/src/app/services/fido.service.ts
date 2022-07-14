@@ -1,6 +1,10 @@
 import {Injectable} from '@angular/core';
 import {environment} from "../../environments/environment";
 
+function bufferDecode(value:string) {
+  return Uint8Array.from(atob(value), c => c.charCodeAt(0));
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -29,7 +33,7 @@ export class FidoService {
     let publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
       attestation: publicKeyCred.publicKey.attestation,
       authenticatorSelection: undefined,
-      challenge: Uint8Array.from(challenge, c => c.charCodeAt(0)),
+      challenge: bufferDecode(challenge),
       excludeCredentials: undefined,
       extensions: undefined,
       pubKeyCredParams: publicKeyCred.publicKey.pubKeyCredParams,
@@ -59,26 +63,13 @@ export class FidoService {
   private createUser(displayName: string, userId: string, name: string): PublicKeyCredentialUserEntity {
     let publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
       displayName: displayName,
-      id: Uint8Array.from(userId, c => c.charCodeAt(0)),
+      id: bufferDecode(userId),
       name: name
     }
     return publicKeyCredentialUserEntity
   }
 
-  public async getCredential(challenge: string, id: BufferSource) {
-    let credential: PublicKeyCredential | null = null
-    const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions = {
-      challenge: Uint8Array.from(
-        challenge, c => c.charCodeAt(0)
-      ),
-      timeout: 60000,
-      allowCredentials: [{
-        id: id ,
-        type: "public-key",
-      }],
-      userVerification: "required"
-    }
-
+  public async getCredential(publicKeyCredentialRequestOptions:PublicKeyCredentialRequestOptions) {
     const cred = await navigator.credentials.get({
       publicKey: publicKeyCredentialRequestOptions
     });

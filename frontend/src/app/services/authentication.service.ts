@@ -41,7 +41,6 @@ export class AuthenticationService {
 
   async registerFinalize(username: string, token: PublicKeyCredential): Promise<any> {
     console.log(token)
-    console.log(JSON.stringify(token))
     return fetch(environment.routes.authenticationService + "/register/finalize",
       {
         headers: {
