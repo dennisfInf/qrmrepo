@@ -29,6 +29,7 @@ The login is pretty simple from a highlevel perspective. The security is based o
 * Verifying the nonce against the issued nonce
 * Verifying the hash of the payload against the stored hash, to prevent data manipulation.
 ![login](png/puml/register/register.png)
+The second request contains the signed challenge(nonce) which got signed by the authenticators private key. This key were generated during the registration and is specific to each individual domain. This prevents user tracking across domains. The signed challenge is forwarded to the enclave which verifies its signature. If the signature is valid, the client receives a HTTP 200 code.
 
 ## Transaction
 This implementation of a transaction is **NOT SECURE**. The transactionhash is just appended to the nonce, which is signed by the authenticator. The Webauthn protocol has the ability to send a transaction to the authenticator and let it sign the transaction with the big difference that the transaction is shown to the user through the authenticators display(If it has such a display) or as a popup. Now the user has the opportunity to verify the transaction.
