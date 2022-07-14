@@ -30,12 +30,8 @@ export class RegisterCardComponent implements OnInit {
   async register(username:string) {
     this.authService.registerInitialize(username, username)
       .then(res => {
-        let jsonObj = res.data.publicKey
-        console.log(jsonObj)
-        this.userId = jsonObj.user.id
-        console.log(jsonObj.user)
-        let challenge = jsonObj.challenge
-        this.fidoService.createCredential(challenge, username, this.userId, username).then(res => {
+        let jsonObj = res.data
+        this.fidoService.createCredential(jsonObj).then(res => {
           this.authService.registerFinalize(username, res).then(res => {
             this.router.navigate(["/login"])
           })

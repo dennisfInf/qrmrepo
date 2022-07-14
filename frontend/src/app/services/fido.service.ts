@@ -15,9 +15,8 @@ export class FidoService {
     return credential
   }
 
-  async createCredential(challenge: string, displayName: string, userId: string, name: string): Promise<Credential | null> {
-    let creationOptions = this.readPublicKeyCredentialCreationOptions(challenge, displayName, userId, name)
-    let credential = navigator.credentials.create({publicKey: creationOptions})
+  async createCredential(publicKeyCred:any): Promise<Credential | null> {
+    let credential = navigator.credentials.create(publicKeyCred)
     return credential
   }
 
