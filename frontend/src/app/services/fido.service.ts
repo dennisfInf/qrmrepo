@@ -18,20 +18,23 @@ export class FidoService {
   async createCredential(publicKeyCred:any): Promise<Credential | null> {
     let challenge:string = publicKeyCred.publicKey.challenge
     publicKeyCred.publicKey.challenge = Uint8Array.from(challenge, c => c.charCodeAt(0))
-    let credential = navigator.credentials.create(publicKeyCred)
+    let user = publicKeyCred.publicKey.user
+    let credopts = this.readPublicKeyCredentialCreationOptions(publicKeyCred.publicKey.challenge,user.displayName,user.id,user.name,publicKeyCred)
+    let credential = navigator.credentials.create({publicKey: credopts})
     return credential
   }
 
-  private readPublicKeyCredentialCreationOptions(challenge: string, displayName: string, userId: string, name: string): PublicKeyCredentialCreationOptions {
+  private readPublicKeyCredentialCreationOptions(challenge: string, displayName: string, userId: string, name: string,publicKeyCred:any): PublicKeyCredentialCreationOptions {
+    
     let publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
-      attestation: this.readAttestation(),
-      authenticatorSelection: this.readAuthenticatorSelection(),
+      attestation: publicKeyCred.publicKey.attestation,
+      authenticatorSelection: undefined,
       challenge: Uint8Array.from(challenge, c => c.charCodeAt(0)),
-      excludeCredentials: this.readExcludeCredentials(),
-      extensions: this.readExtensions(),
-      pubKeyCredParams: this.readPubKeyCredParams(),
-      rp: this.readRp(),
-      timeout: this.readTimeout(),
+      excludeCredentials: undefined,
+      extensions: undefined,
+      pubKeyCredParams: publicKeyCred.publicKey.pubKeyCredParams,
+      rp: publicKeyCred.publicKey.rp,
+      timeout: publicKeyCred.publicKey.timeout,
       user: this.createUser(displayName, userId, name)
     }
     return publicKeyCredentialCreationOptions
@@ -51,6 +54,7 @@ export class FidoService {
     }
     return publicKeyCredentialCreationOptions
   }
+
 
   private createUser(displayName: string, userId: string, name: string): PublicKeyCredentialUserEntity {
     let publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
