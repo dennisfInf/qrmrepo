@@ -8,6 +8,7 @@ docker build -t relay .
 docker run -d \
 --name relay \
 -e SERVERPORT=replaceme \
+-e IMAGENAME=replaceme \
 -e DBHOST=replaceme \
 -e DBPORT=replaceme \
 -e DBNAME=replaceme \
@@ -21,6 +22,7 @@ relay setup
 docker run -d \
 --name relay \
 -e SERVERPORT=replaceme \
+-e IMAGENAME=replaceme \
 -e DBHOST=replaceme \
 -e DBPORT=replaceme \
 -e DBNAME=replaceme \
