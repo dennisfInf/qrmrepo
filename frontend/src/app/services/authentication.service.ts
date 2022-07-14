@@ -4,10 +4,10 @@ import { environment } from "../../environments/environment";
 import { JwtHelperService } from "@auth0/angular-jwt";
 
 function bufferEncode(value) {
-  return btoa(String.fromCharCode.apply(null, new Uint8Array(value).map( c => c)))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=/g, "")
+  var u8 = new Uint8Array(value);
+  var decoder = new TextDecoder('utf8');
+  var b64encoded = btoa(decoder.decode(u8));
+  return b64encoded
 }
 
 @Injectable({
