@@ -1,0 +1,66 @@
+@startuml Transaction
+title Transaction
+participant Relay as relay
+box Internal
+participant "API-Server" as api
+participant Host as host 
+participant Enclave as enclave 
+end box
+participant "Backend-Server" as backend
+
+' Part 1
+relay -> api : **[HTTPS]** /beginTransaction
+activate relay
+activate api
+
+api -> host : host_get_pubkey()
+activate host
+
+host -> host : host_load_data()
+host -> enclave : enclave_get_pubkey()
+activate enclave
+enclave --> host : ret
+deactivate enclave 
+
+host --> api : ret
+deactivate host 
+
+api -> backend :**[HTTPS]** /getWalletAddress
+activate backend 
+backend --> api : ret
+deactivate backend 
+
+api -> backend : **[HTTPS]** /prepareTransaction
+activate backend 
+backend -> api : ret 
+deactivate backend
+
+api --> relay : ret
+deactivate relay 
+deactivate api
+
+'Part 2
+relay -> api : **[HTTPS]** /finishTransaction
+activate relay
+activate api
+
+api -> host : host_sign_secp256k1()
+activate host
+host -> host : host_load_data()
+host -> enclave : enclave_sign_sha256()
+activate enclave 
+enclave --> host : ret
+deactivate enclave 
+
+host --> api : ret 
+deactivate host 
+
+api -> backend : **[HTTPS]** /SendTransaction
+activate backend 
+backend -> api : ret 
+deactivate backend 
+
+api --> relay : ret 
+deactivate api 
+deactivate relay
+@enduml
