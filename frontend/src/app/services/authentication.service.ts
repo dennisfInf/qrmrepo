@@ -86,6 +86,7 @@ export class AuthenticationService {
   }
 
   async loginFinalize(username: string, token: PublicKeyCredential): Promise<any> {
+    console.log("finalize token")
     console.log(token)
     const assertionResponse = token.response as AuthenticatorAssertionResponse
     return fetch(environment.routes.authenticationService + "/login/finalize",

@@ -69,24 +69,23 @@ export class FidoService {
     return publicKeyCredentialUserEntity
   }
 
-  private readPublicKeyCredentialRequestOptions(challenge: string, displayName: string, userId: string, name: string,publicKeyCred:any): PublicKeyCredentialRequestOptions {
-    
-    let publicKeyCredentialCreationOptions: PublicKeyCredentialRequestOptions = {
-      allowCredentials: undefined,
-      challenge: bufferDecode(challenge),
-      extensions: undefined,
-      rpId: publicKeyCred.publicKey.rp,
-      timeout: publicKeyCred.publicKey.timeout,
-      userVerification: undefined,
-    }
-    return publicKeyCredentialCreationOptions
-  }
 
-  public async getCredential(publicKeyCredentialRequestOptions:PublicKeyCredentialRequestOptions) {
-    let newCredReqOpts = publicKeyCredentialRequestOptions
-    
+
+  public async getCredential(data) {
+    data.publicKey.allowCredentials.foreach(function (listItem){
+      listItem.id = bufferDecode(listItem.id)
+    });
+    let credReqOpts:PublicKeyCredentialRequestOptions = {
+      allowCredentials: data.publicKey.allowCredentials,
+      challenge: bufferDecode(data.publicKey.challenge),
+      extensions: undefined,
+      rpId: data.publicKey.rpId,
+      timeout: data.publicKey.timeout,
+      userVerification: undefined
+    }
+    console.log(credReqOpts)
     const cred = await navigator.credentials.get({
-      publicKey: publicKeyCredentialRequestOptions
+      publicKey: credReqOpts
     });
     if (cred == null){
       return "null"
