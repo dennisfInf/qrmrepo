@@ -215,5 +215,5 @@ func isPodRunning(ctx context.Context, c kubernetes.Interface, podName string) w
 // Poll up to timeout seconds for pod to enter running state.
 // Returns an error if the pod never enters the running state.
 func waitForPodRunning(ctx context.Context, c kubernetes.Interface, podName string) error {
-	return wait.PollImmediate(time.Second, TIMEOUT, isPodRunning(ctx, c, podName))
+	return wait.PollImmediate(3*time.Second, TIMEOUT, isPodRunning(ctx, c, podName))
 }
