@@ -30,8 +30,8 @@ export class RegisterCardComponent implements OnInit {
   async register(username:string) {
     this.authService.registerInitialize(username, username)
       .then(res => {
-        console.log(res)
-        let jsonObj = JSON.parse(res)
+        console.log(res.data)
+        let jsonObj = JSON.parse(res.data)
         console.log(jsonObj)
         this.userId = jsonObj.user.id
         let challenge = jsonObj.challenge

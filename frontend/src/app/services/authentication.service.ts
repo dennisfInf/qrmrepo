@@ -19,7 +19,7 @@ export class AuthenticationService {
 
   }
 
-  async registerInitialize(username: string, name: string): Promise<string> {
+  async registerInitialize(username: string, name: string): Promise<any> {
     return axios.get(
       environment.routes.authenticationService + "/register/initialize",
       {
@@ -30,7 +30,7 @@ export class AuthenticationService {
     )
   }
 
-  async registerFinalize(username: string, token: any): Promise<string> {
+  async registerFinalize(username: string, token: any): Promise<any> {
     return axios.post(
       environment.routes.authenticationService + "/register/finalize",
       token,
@@ -42,7 +42,7 @@ export class AuthenticationService {
     )
   }
 
-  async loginInitialize(username: string): Promise<string> {
+  async loginInitialize(username: string): Promise<any> {
     return axios.get(
       environment.routes.authenticationService + "/login/initialize",
       {
@@ -53,7 +53,7 @@ export class AuthenticationService {
     )
   }
 
-  async loginFinalize(username: string, token: any): Promise<string> {
+  async loginFinalize(username: string, token: any): Promise<any> {
     return axios.post(
       environment.routes.authenticationService + "/login/finalize",
       token,
