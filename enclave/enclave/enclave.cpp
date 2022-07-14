@@ -91,7 +91,7 @@ oe_result_t Seal::seal(data_t *data, uint8_t **blob, size_t *blob_size) const {
 oe_result_t Seal::unseal(data_t *sealed, uint8_t **data,
                          size_t *data_size) const {
   printf("ENCLAVE: Seal::unseal()\n");
-  printf("\tsealed length: %d\n", sealed->size);
+  printf("\tsealed length: %zu\n", sealed->size);
   return oe_unseal(sealed->blob, sealed->size, this->opt_msg, this->opt_size,
                    data, data_size);
 }
@@ -288,7 +288,7 @@ void enclave_gen_secp256k1_keys(int *ret) {
   // Generate the keypair
   if ((*ret = mbedtls_ecdsa_genkey(&ctx, MBEDTLS_ECP_DP_SECP256K1,
                                    mbedtls_entropy_func, &entropy)) != 0) {
-    printf("ENCLAVE: ERROR: mbedtls_ecdsa_genkey() returned with %d\n", ret);
+    printf("ENCLAVE: ERROR: mbedtls_ecdsa_genkey() returned with %d\n", *ret);
   } else {
     printf("ENCLAVE: x: %lu, y: %lu\n", *ctx.Q.X.p, *ctx.Q.Y.p);
     // Write the public key to a binary
@@ -394,6 +394,33 @@ void enclave_sign_sha256(data_t *hash_data, data_t *sealed_bin,
   mbedtls_ecdsa_write_signature(&ctx, MBEDTLS_MD_SHA256, hash_data->blob,
                                 hash_data->size, sig, &siglen,
                                 mbedtls_entropy_func, &entropy);
+  // mbedtls_mpi r, s;
+  // mbedtls_mpi_init(&r);
+  // mbedtls_mpi_init(&s);
+
+  // if (mbedtls_ecdsa_sign(&grp, &r, &s, &priv, hash_data->blob,
+  // hash_data->size,
+  //                       mbedtls_entropy_func, &entropy) == 0) {
+  //  printf("ENCLAVE: Signature generation successful\n");
+  //} else {
+  //  printf("ENCLAVE: Something went wrong during signing\n");
+  //}
+
+  // sig_data->blob = (unsigned char *)std::malloc(65);
+  // sig_data->size = 65;
+
+  // std::memset(sig_data->blob, 0, 65);
+
+  // std::memcpy(sig_data->blob, r.p, 32);
+  // std::memcpy(sig_data->blob + 32, s.p, 32);
+
+  // printf("Array: \n");
+  // for(int i = 0; i < 65; ++i) {
+  //        printf("%hu", sig_data[i]);
+  //}
+  // printf("\n");
+
+  //printf("ENCLAVE: R length: %lu, S length: %lu\n", sizeof(*r.p), sizeof(*s.p));
 
   sig_data->blob = sig;
   sig_data->size = siglen;
@@ -434,7 +461,7 @@ bool enclave_verify_secp256k1_sig(data_t *sealed_pubkey, data_t *sig_data,
         printf("ENCLAVE: Signature OK\n");
       } else {
         printf("ENCLAVE: ERROR: Signature invalid\n");
-        printf("\t X: %d,\tY: %d\nHash: ", ctx.Q.X.p, ctx.Q.Y.p);
+        printf("\t X: %lu,\tY: %lu\nHash: ", *ctx.Q.X.p, *ctx.Q.Y.p);
 
         for (int i = 0; i < sig_hash->size; ++i) {
           printf("%u", sig_hash->blob[i]);
