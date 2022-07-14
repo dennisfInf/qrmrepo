@@ -55,7 +55,7 @@ func (s *Server) EnclaveCreator() echo.MiddlewareFunc {
 
 				c.Set("address", lookup.EnclaveAddress)
 
-				//time.Sleep(20 * time.Second)
+				time.Sleep(4 * time.Second)
 				if err := waitForPodRunning(c.Request().Context(), s.clientset, podName); err != nil {
 					log.Error().Caller().Err(err).Msg("enclave failed to start")
 					return echo.NewHTTPError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
