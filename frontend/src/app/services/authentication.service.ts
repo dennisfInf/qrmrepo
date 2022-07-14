@@ -2,16 +2,17 @@ import { Injectable } from '@angular/core';
 import axios from "axios";
 import { environment } from "../../environments/environment";
 import { JwtHelperService } from "@auth0/angular-jwt";
-@Injectable({
-  providedIn: 'root'
-})
-function bufferEncode(value):string {
+
+function bufferEncode(value) {
   return btoa(String.fromCharCode.apply(null, new Uint8Array(value)))
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=/g, "");;
 }
 
+@Injectable({
+  providedIn: 'root'
+})
 export class AuthenticationService {
   private jwtHelper: JwtHelperService
   constructor() {
