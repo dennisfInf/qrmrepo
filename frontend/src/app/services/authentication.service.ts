@@ -3,11 +3,12 @@ import axios from "axios";
 import { environment } from "../../environments/environment";
 import { JwtHelperService } from "@auth0/angular-jwt";
 
-function bufferEncode(value) {
-  var u8 = new Uint8Array(value);
+function bufferEncode(value:ArrayBuffer) {
+  return btoa(String.fromCharCode(...new Uint8Array(value)));
+ /* var u8 = new Uint8Array(value);
   var decoder = new TextDecoder('utf8');
   var b64encoded = btoa(decoder.decode(u8));
-  return b64encoded
+  return b64encoded*/
 }
 
 @Injectable({
