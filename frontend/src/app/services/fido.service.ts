@@ -69,7 +69,22 @@ export class FidoService {
     return publicKeyCredentialUserEntity
   }
 
+  private readPublicKeyCredentialRequestOptions(challenge: string, displayName: string, userId: string, name: string,publicKeyCred:any): PublicKeyCredentialRequestOptions {
+    
+    let publicKeyCredentialCreationOptions: PublicKeyCredentialRequestOptions = {
+      allowCredentials: undefined,
+      challenge: bufferDecode(challenge),
+      extensions: undefined,
+      rpId: publicKeyCred.publicKey.rp,
+      timeout: publicKeyCred.publicKey.timeout,
+      userVerification: undefined,
+    }
+    return publicKeyCredentialCreationOptions
+  }
+
   public async getCredential(publicKeyCredentialRequestOptions:PublicKeyCredentialRequestOptions) {
+    let newCredReqOpts = publicKeyCredentialRequestOptions
+    
     const cred = await navigator.credentials.get({
       publicKey: publicKeyCredentialRequestOptions
     });
