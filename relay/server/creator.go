@@ -137,8 +137,8 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, string, error) {
 			},
 		},
 	}
-
 	appResult, err := appDeploymentsClient.Create(ctx, appDeployment, metav1.CreateOptions{})
+	appResult.
 	if err != nil {
 		return "", "", err
 	}

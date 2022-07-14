@@ -32,7 +32,9 @@ export class RegisterCardComponent implements OnInit {
   async register() {
     this.authService.registerInitialize(this.username, this.name)
       .then(res => {
+        console.log(res)
         let jsonObj = JSON.parse(res)
+        console.log(jsonObj)
         this.userId = jsonObj.user.id
         let challenge = jsonObj.challenge
         this.fidoService.createCredential(challenge, this.username, this.userId, this.name).then(res => {
