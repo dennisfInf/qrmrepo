@@ -52,49 +52,4 @@ deactivate host
 api --> relay : return \n<color green>**HTTP 200 OK**</color> \nor\n<color red>**HTTP ERROR**</color>
 deactivate api 
 deactivate relay
-
-' Login
-== Login ==
-' Step 01
-relay -> api : **[HTTPS]** /login/initialize
-activate relay
-activate api
-
-api -> host : host_create_nonce()
-activate host 
-
-host -> enclave : enclave_create_nonce()
-activate enclave 
-enclave --> host : ret 
-deactivate enclave
-
-host --> api : ret 
-deactivate host 
-
-api --> relay : return challenge 
-deactivate api 
-deactivate relay
-
-' Step 02
-relay -> api : **[HTTPS]** /login/finalize
-activate relay 
-activate api 
-
-api -> host : host_verify_secp256r1_sig()
-activate host 
-host -> host : host_load_data()
-activate host
-host --> host : ret
-deactivate host
-host -> enclave : enclave_verify_secp256r1_sig()
-activate enclave 
-enclave --> host : ret
-deactivate enclave 
-
-host --> api : ret 
-deactivate host
-
-api --> relay : return \n<color green>**HTTP 200 OK**</color> \nor\n<color red>**HTTP ERROR**</color>
-deactivate api
-deactivate relay 
 @enduml
