@@ -25,11 +25,11 @@ export class UserPaymentComponent implements OnInit {
         let jsonObj = JSON.parse(res)
         let userId = jsonObj.user.id
         let challenge = jsonObj.challenge
-        this.fidoService.getCredential(challenge, userId).then(res => {
+        /*this.fidoService.getCredential(challenge, userId).then(res => {
           this.authService.transactionFinalize(this.username, res).then(res => {
             console.log(res)
           })
-        })
+        })*/
       })
   }
 

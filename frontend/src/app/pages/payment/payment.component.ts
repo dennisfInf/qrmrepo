@@ -60,9 +60,9 @@ export class PaymentComponent implements OnInit {
 
   async login() {
     if (this.credential != null)
-      this.fidoService.getCredential("test", this.credential).then(res => {
+      /*this.fidoService.getCredential("test", this.credential).then(res => {
         this.error = res
-      })
+      })*/
 
     this.error = "credential is null"
   }
