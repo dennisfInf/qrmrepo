@@ -9,20 +9,18 @@ import {Router} from "@angular/router";
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
-  name! : string
-  username! :string
 
   constructor(private authService : AuthenticationService, private fidoService : FidoService, private router : Router) { }
 
   ngOnInit(): void {
   }
-  async login() {
-    this.authService.loginInitialize(this.username)
+  async login(username:string) {
+    this.authService.loginInitialize(username)
       .then(res => {
-        this.fidoService.getCredential(res.data as PublicKeyCredentialRequestOptions).then(res => {
-          this.authService.loginFinalize(this.username, res as PublicKeyCredential).then(res => {
+        this.fidoService.getCredential(res.data).then(res => {
+          this.authService.loginFinalize(username, res as PublicKeyCredential).then(res => {
 
-            if (this.authService.login(this.name)) {
+            if (this.authService.login(username)) {
               this.router.navigate(["/dashboard"])
             }
 
