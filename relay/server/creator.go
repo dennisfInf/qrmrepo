@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/enclaive/relay/models"
 	"github.com/labstack/echo/v4"
@@ -16,6 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -78,10 +80,8 @@ func (s *Server) DeployEnclave(ctx context.Context) (string, string, error) {
 	backendip, _ := s.clientset.CoreV1().Services(NAMESPACE).Get(ctx, "backend-service", metav1.GetOptions{})
 	randsubstr, _ := randomHex(16)
 	randsubstr = "enclave" + randsubstr
-	quantity, quantityErr := resource.ParseQuantity("512Ki")
-	if quantityErr != nil {
-		log.Error().Caller().Err(quantityErr).Msg("failed to parse quantity")
-	}
+	quantity, _ := resource.ParseQuantity("512Ki")
+
 	appDeployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
@@ -193,17 +193,23 @@ func randomHex(n int) (string, error) {
 // currently running
 func isPodRunning(ctx context.Context, c kubernetes.Interface, podName string) wait.ConditionFunc {
 	return func() (bool, error) {
-		pod, err := c.CoreV1().Pods(NAMESPACE).Get(ctx, podName, metav1.GetOptions{})
+		pods, err := c.CoreV1().Pods(NAMESPACE).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			return false, err
 		}
 
-		switch pod.Status.Phase {
-		case apiv1.PodRunning:
-			return true, nil
-		default:
-			return false, nil
+		for _, pod := range pods.Items {
+			if strings.HasPrefix(pod.GetName(), podName) {
+				switch pod.Status.Phase {
+				case apiv1.PodRunning:
+					return true, nil
+				default:
+					return false, nil
+				}
+			}
 		}
+
+		return false, errors.New("pod does not exist")
 	}
 }
 
