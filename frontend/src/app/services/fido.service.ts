@@ -71,7 +71,7 @@ export class FidoService {
 
 
 
-  public async getCredential(data:any) {
+  public async getCredential(data:any):Promise<Credential | null> {
     console.log("getCredential")
     data.publicKey.allowCredentials.foreach(function (listItem:any){
       listItem.id = bufferDecode(listItem.id)
@@ -88,9 +88,6 @@ export class FidoService {
     const cred = await navigator.credentials.get({
       publicKey: credReqOpts
     });
-    if (cred == null){
-      return "null"
-    }
     return cred
   }
 
