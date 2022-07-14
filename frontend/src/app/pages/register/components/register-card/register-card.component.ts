@@ -10,9 +10,6 @@ import {Router} from "@angular/router";
   styleUrls: ['./register-card.component.css']
 })
 export class RegisterCardComponent implements OnInit {
-
-  username: string = "username"
-  name: string = "username"
   showError: boolean = false
   error: any = ""
   userId: string = "Ich bin eine UserId"
@@ -22,6 +19,7 @@ export class RegisterCardComponent implements OnInit {
   constructor(private fidoService: FidoService,
               private authService: AuthenticationService,
               private router: Router
+            
   ) {
 
   }
@@ -29,16 +27,16 @@ export class RegisterCardComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  async register() {
-    this.authService.registerInitialize(this.username, this.name)
+  async register(username:string) {
+    this.authService.registerInitialize(username, username)
       .then(res => {
         console.log(res)
         let jsonObj = JSON.parse(res)
         console.log(jsonObj)
         this.userId = jsonObj.user.id
         let challenge = jsonObj.challenge
-        this.fidoService.createCredential(challenge, this.username, this.userId, this.name).then(res => {
-          this.authService.registerFinalize(this.username, res).then(res => {
+        this.fidoService.createCredential(challenge, username, this.userId, username).then(res => {
+          this.authService.registerFinalize(username, res).then(res => {
             this.router.navigate(["/login"])
           })
         })
