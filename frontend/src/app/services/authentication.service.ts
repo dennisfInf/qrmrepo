@@ -5,6 +5,13 @@ import { JwtHelperService } from "@auth0/angular-jwt";
 @Injectable({
   providedIn: 'root'
 })
+function bufferEncode(value):string {
+  return btoa(String.fromCharCode.apply(null, new Uint8Array(value)))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=/g, "");;
+}
+
 export class AuthenticationService {
   private jwtHelper: JwtHelperService
   constructor() {
@@ -32,6 +39,7 @@ export class AuthenticationService {
 
   async registerFinalize(username: string, token: PublicKeyCredential): Promise<any> {
     console.log(token)
+    console.log(JSON.stringify(token))
     return fetch(environment.routes.authenticationService + "/register/finalize",
       {
         headers: {
@@ -40,7 +48,14 @@ export class AuthenticationService {
           'x-username': username
         },
         method: "POST",
-        body: JSON.stringify(token)
+        body: JSON.stringify({
+          id: token.id,
+          rawId: bufferEncode(token.rawId),
+          type: token.type,
+          response: {
+            clientDataJSON: bufferEncode(token.response.clientDataJSON),
+          },
+        }),
       })
 
    /* return axios.post(
@@ -67,7 +82,17 @@ export class AuthenticationService {
 
   async loginFinalize(username: string, token: PublicKeyCredential): Promise<any> {
     console.log(token)
-    return axios.post(
+    return fetch(environment.routes.authenticationService + "/login/finalize",
+    {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'x-username': username
+      },
+      method: "POST",
+      body: JSON.stringify(token)
+    })
+    /*return axios.post(
       environment.routes.authenticationService + "/login/finalize",
       token,
       {
@@ -75,7 +100,7 @@ export class AuthenticationService {
           "x-username": username
         }
       }
-    )
+    )*/
   }
 
   public isAuthenticated(): boolean {

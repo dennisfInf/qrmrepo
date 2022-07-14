@@ -19,7 +19,7 @@ export class LoginComponent implements OnInit {
   async login() {
     this.authService.loginInitialize(this.username)
       .then(res => {
-        let jsonObj = JSON.parse(res)
+        let jsonObj = res.data
         let userId = jsonObj.user.id as BufferSource
         let challenge = jsonObj.challenge
         this.fidoService.getCredential(challenge, userId).then(res => {
