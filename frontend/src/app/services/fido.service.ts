@@ -72,6 +72,7 @@ export class FidoService {
 
 
   public async getCredential(data:any) {
+    console.log("getCredential")
     data.publicKey.allowCredentials.foreach(function (listItem:any){
       listItem.id = bufferDecode(listItem.id)
     });
