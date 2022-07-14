@@ -20,7 +20,7 @@ export class FidoService {
     console.log(user)
     console.log(publicKeyCred.publicKey.challenge)
     let credopts = this.readPublicKeyCredentialCreationOptions(publicKeyCred.publicKey.challenge,user.displayName,user.id,user.name,publicKeyCred)
-    let credential = navigator.credentials.create({publicKey: credopts})
+    let credential = await navigator.credentials.create({publicKey: credopts})
     return credential
   }
 

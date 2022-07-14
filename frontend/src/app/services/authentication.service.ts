@@ -30,7 +30,8 @@ export class AuthenticationService {
     )
   }
 
-  async registerFinalize(username: string, token: any): Promise<any> {
+  async registerFinalize(username: string, token: PublicKeyCredential): Promise<any> {
+    console.log(token)
     return axios.post(
       environment.routes.authenticationService + "/register/finalize",
       token,
