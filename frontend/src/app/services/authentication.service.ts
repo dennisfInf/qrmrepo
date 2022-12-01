@@ -31,7 +31,7 @@ export class AuthenticationService {
 
   async registerInitialize(username: string, name: string): Promise<any> {
     return axios.get(
-      environment.routes.authenticationService + "/register/initialize",
+      environment.routes.authenticationService + "/register-init",
       {
         headers: {
           "x-username": username
@@ -40,9 +40,9 @@ export class AuthenticationService {
     )
   }
 
-  async registerFinalize(username: string, token: PublicKeyCredential): Promise<any> {
+  async registerFinalize(username: string, token: PublicKeyCredential): Promise<Response> {
     const authAttRes = token.response as AuthenticatorAttestationResponse
-    return fetch(environment.routes.authenticationService + "/register/finalize",
+    return fetch(environment.routes.authenticationService + "/register-finalize",
       {
         headers: {
           'Accept': 'application/json',
@@ -74,7 +74,7 @@ export class AuthenticationService {
 
   async loginInitialize(username: string): Promise<any> {
     return axios.get(
-      environment.routes.authenticationService + "/login/initialize",
+      environment.routes.authenticationService + "/login-init",
       {
         headers: {
           "x-username": username
@@ -83,28 +83,27 @@ export class AuthenticationService {
     )
   }
 
-  async loginFinalize(username: string, token: PublicKeyCredential): Promise<any> {
-    console.log("finalize token")
+  async loginFinalize(username: string, token: PublicKeyCredential): Promise<Response> {
     console.log(token)
     const assertionResponse = token.response as AuthenticatorAssertionResponse
-    return fetch(environment.routes.authenticationService + "/login/finalize",
-    {
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'x-username': username
-      },
-      method: "POST",
-      body: JSON.stringify({
-        id: token.id,
-        rawId: bufferEncode(token.rawId),
-        type: token.type,
-        response: {
-          authenticatorData: bufferEncode(assertionResponse.authenticatorData),
-          clientDataJSON: bufferEncode(assertionResponse.clientDataJSON),
-          signature: bufferEncode(assertionResponse.signature),
-          userHandle: bufferEncode(assertionResponse.userHandle??new ArrayBuffer(0)),
+    return fetch(environment.routes.authenticationService + "/login-finalize",
+      {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'x-username': username
         },
+        method: "POST",
+        body: JSON.stringify({
+          id: token.id,
+          rawId: bufferEncode(token.rawId),
+          type: token.type,
+          response: {
+            authenticatorData: bufferEncode(assertionResponse.authenticatorData),
+            clientDataJSON: bufferEncode(assertionResponse.clientDataJSON),
+            signature: bufferEncode(assertionResponse.signature),
+            userHandle: bufferEncode(assertionResponse.userHandle??new ArrayBuffer(0)),
+          },
       }),
     })
     /*return axios.post(
@@ -127,6 +126,8 @@ export class AuthenticationService {
   }
 
   public login(token: string): boolean {
+    console.log("logging in")
+    console.log(token)
     localStorage.setItem("token", token)
     return true
   }
@@ -142,7 +143,7 @@ export class AuthenticationService {
 
   async transactionInitialize(username: string, amount: string, receiver: string): Promise<string> {
     return axios.post(
-      environment.routes.authenticationService + "/transaction/initialize",
+      environment.routes.authenticationService + "/transaction-init",
       JSON.stringify(
         {
           username: username,
@@ -159,7 +160,7 @@ export class AuthenticationService {
 
   async transactionFinalize(username: string, token: any): Promise<string> {
     return axios.post(
-      environment.routes.authenticationService + "/transaction/finalize",
+      environment.routes.authenticationService + "/transaction-finalize",
       token
       ,
       {
@@ -170,21 +171,9 @@ export class AuthenticationService {
     )
   }
 
-  async getPublicKey(username: string): Promise<string> {
-    //address
-    return axios.get(
-      environment.routes.authenticationService + "/getWalletAddress",
-      {
-        headers: {
-          "x-username": username,
-        }
-      }
-    )
+
+  logout() {
+    localStorage.removeItem("token")
   }
-
-
-
-
-
 }
 

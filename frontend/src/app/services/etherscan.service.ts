@@ -10,7 +10,7 @@ export class EtherscanService {
   constructor() { }
 
   public async getAddressBalance(address : string) :  Promise<AxiosResponse<any, any>>{
-    let url = "https://api.etherscan.io/api\n" +
+    let url = "https://api-goerli.etherscan.io/api\n" +
       "?module=account" +
       "&action=balance" +
       "&address=" + address +
@@ -20,7 +20,7 @@ export class EtherscanService {
   }
 
   public async getTransactions(address : string, offset:number){
-    let url = "https://api.etherscan.io/api" +
+    let url = "https://api-goerli.etherscan.io/api" +
       "?module=account" +
       "&action=txlist" +
       "&address=" + address +
@@ -35,11 +35,15 @@ export class EtherscanService {
   }
 
   public async getTransactionReceiptStatus(txHash : string){
-    let url = "https://api.etherscan.io/api" +
+    let url = "https://api-goerli.etherscan.io/api" +
       "?module=transaction" +
       "&action=gettxreceiptstatus" +
       "&txhash=" + txHash+
       "&apikey=" +this.apiKey
     return axios.get(url)
+  }
+
+  public getTransactionLink(txHash : string) {
+    return "https://goerli.etherscan.io/tx/" + txHash
   }
 }

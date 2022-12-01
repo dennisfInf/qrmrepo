@@ -22,14 +22,14 @@ export const environment = {
     },
     pubKeyCredParams : [ ],
     rp : {
-      domain: "elonmaskwallet.de",
-      name: "elon mask"
+      domain: "elonwallet.io",
+      name: "elonwallet.io"
     },
     timeout: 60000,
   },
   routes : {
     // @ts-ignore
-    authenticationService: "https://elonmaskwallet.de"
+    authenticationService: "https://elonwallet.io/api"
   }
 };
 

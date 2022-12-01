@@ -19,13 +19,13 @@ export const environment = {
     },
     pubKeyCredParams : [ {type: "public-key", alg: -7}],
     rp : {
-      domain: "elonmaskwallet.de",
-      name: "elon mask"
+      domain: "elonwallet.io",
+      name: "elonwallet"
     },
     timeout: 60000,
   },
   routes : {
     // @ts-ignore
-    authenticationService: "https://elonmaskwallet.de"
+    authenticationService: "https://elonwallet.io/api"
   }
 };

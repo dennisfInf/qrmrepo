@@ -8,32 +8,13 @@
     </div>
     <div
       class="origin-top-left absolute left-1 {{mainMenu}} w-56 -mt-2 rounded-xl shadow-lg bg-white overflow-hidden">
-      <div class="">
-        <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" -->
-        <a routerLink="/tutorial" class="text-gray-500 block px-4 py-2 hover:bg-purple-200">Tutorial</a>
-        <a routerLink="/docs" class="text-gray-500 block px-4 py-2 hover:bg-purple-200">Docs</a>
-        <a routerLink="/about" class="text-gray-500 block px-4 py-2 hover:bg-purple-200">About</a>
-        <a routerLink="/blog" class="text-gray-500 block px-4 py-2 hover:bg-purple-200">Blog</a>
-        <a href="https://github.com/enclaive/elon_wallet" target="_blank" class="text-purple-600 block px-4 py-2 hover:bg-purple-200">Gihub</a>
-      </div>
+
     </div>
   </div>
   <a routerLink="/"
      class="text-3xl text-purple-200 hover:outline outline-purple-400 outline-offset-2 outline-3 pt-1 text-white rounded-xl px-2 select-none cursor-pointer m-3 transition ease-linear">ElonMask</a>
 
 
-  <div class="hidden sm:inline-block flex">
-    <a routerLink="/tutorial" routerLinkActive="bg-purple-400"
-       class="text-lg hidden sm:inline-block hover:bg-purple-400 py-1.5 text-white rounded-xl px-2 select-none cursor-pointer m-3 transition ease-linear">Tutorial</a>
-    <a routerLink="/docs" routerLinkActive="bg-purple-400"
-       class="text-lg hidden sm:inline-block hover:bg-purple-400 py-1.5 text-white rounded-xl px-2 select-none cursor-pointer m-3 transition ease-linear">Docs</a>
-    <a routerLink="/about" routerLinkActive="bg-purple-400"
-       class="text-lg hidden sm:inline-block hover:bg-purple-400 py-1.5 text-white rounded-xl px-2 select-none cursor-pointer m-3 transition ease-linear">About</a>
-    <a routerLink="/blog" routerLinkActive="bg-purple-400"
-       class="text-lg hidden sm:inline-block hover:bg-purple-400 py-1.5 text-white rounded-xl px-2 select-none cursor-pointer m-3 transition ease-linear">Blog</a>
-    <a href="https://github.com/enclaive/elon_wallet" target="_blank" routerLinkActive="bg-purple-400"
-       class="text-lg hidden sm:inline-block hover:outline hover:outline-purple-400 py-1.5 text-white rounded-xl px-2 select-none cursor-pointer m-3 transition ease-linear">Github</a>
-  </div>
   <div class="inline-block relative">
     <div (click)="toggleProfileMenu()" (blur)="closeProfileMenu()"
       class="text-xl hover:bg-purple-400 py-2 text-white rounded-xl px-2 select-none cursor-pointer m-3 transition ease-linear"  tabindex="1">
@@ -45,9 +26,13 @@
     </div>
     <div
       class="origin-top-right absolute {{profileMenu}} right-1 w-56 -mt-2 rounded-xl shadow-lg bg-white overflow-hidden">
-      <div>
+      <div *ngIf="!this.authService.isAuthenticated()">
         <a href="/login" class="text-gray-500 block px-4 py-2 hover:bg-purple-200">Sign in</a>
         <a href="/register" class="text-gray-500 block px-4 py-2 hover:bg-purple-200">Register</a>
+      </div>
+      <div *ngIf="this.authService.isAuthenticated()">
+        <p  class="text-gray-500 block px-4 py-2">Hello {{this.userService.getUserName()}}</p>
+        <div class="text-gray-500 block px-4 py-2 hover:bg-purple-200 cursor-pointer" (click)="logout()">Logout</div>
       </div>
     </div>
 

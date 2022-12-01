@@ -11,4 +11,12 @@ export class TransactionService {
   public getTransactions() : Transaction[] {
     return TransactionList
   }
+
+  public async transactionInitialize(){
+
+  }
+
+  public async transactionFinalize(jwt: string, receiver : string, amount: number){
+
+  }
 }

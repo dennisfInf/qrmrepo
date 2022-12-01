@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {TransactionService} from "../../../services/transaction.service";
-import {ContactsService} from "../../../services/contacts.service";
+import {ContactResponse, ContactsService} from "../../../services/contacts.service";
 import {ShopsService} from "../../../services/shops.service";
 import {Transaction} from "../../../services/shared/transaction";
 import {Shop} from "../../../services/shared/shop";
@@ -18,11 +18,12 @@ import {Router} from "@angular/router";
 export class DashboardComponent implements OnInit {
 
   transactions: Transaction[]
-  shops: Shop[]
-  contacts: Contact[]
+  contacts!: Contact[]
   address: string
   etherscanTransactions: any[] = []
-
+  balance! : number
+  contactName: any;
+  contactAddress: any;
   constructor(private transactionService: TransactionService,
               private contactService: ContactsService,
               private shopService: ShopsService,
@@ -30,12 +31,16 @@ export class DashboardComponent implements OnInit {
               private etherscanService: EtherscanService,
               private router : Router) {
     this.transactions = transactionService.getTransactions()
-    this.contacts = contactService.getContacts()
-    this.shops = shopService.getShops()
+    contactService.getContacts().then(res => {
+      console.log("contacts")
+      console.log(res)
+      let response = res.data as ContactResponse
+        this.contacts = response.contacts
+    })
     this.address = this.userService.getAddress()
-    this.etherscanService.getTransactions(this.userService.getAddress(), 0).then(res => {
-      this.etherscanTransactions = res.data.result.splice(0, 5)
-      console.log(this.etherscanTransactions)
+    this.etherscanService.getAddressBalance(this.address).then(res => {
+      console.log(res.data.result)
+      this.balance = this.gweiToEth(res.data.result)
     })
   }
 
@@ -54,5 +59,20 @@ export class DashboardComponent implements OnInit {
 
   route() {
     this.router.navigate(["/dashboard/user-payment"])
+  }
+
+
+  addContact() {
+    if(this.contactName != "" && this.contactAddress != "") {
+      this.contactService.createContact(this.contactName, this.contactAddress).then(res => {
+        console.log(res)
+        this.contactService.getContacts().then(res => {
+          console.log("contacts")
+          console.log(res)
+          let response = res.data as ContactResponse
+          this.contacts = response.contacts
+        })
+      })
+    }
   }
 }

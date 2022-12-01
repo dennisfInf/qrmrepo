@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import {AuthenticationService} from "../../../services/authentication.service";
 import {FidoService} from "../../../services/fido.service";
+import {Contact} from "../../../services/shared/contact";
+import {ContactResponse, ContactsService} from "../../../services/contacts.service";
 
 @Component({
   selector: 'app-user-payment',
@@ -11,11 +13,16 @@ export class UserPaymentComponent implements OnInit {
   receiver!: string;
   amount! : string;
   username : string
-  constructor(private authService : AuthenticationService, private fidoService : FidoService) {
+  contacts!: Contact[]
+  constructor(private authService : AuthenticationService, private fidoService : FidoService, private contactService: ContactsService) {
     this.username = authService.getToken()
   }
 
   ngOnInit(): void {
+     this.contactService.getContacts().then(res => {
+       let result = res.data as ContactResponse
+       this.contacts = result.contacts
+     })
   }
 
   async makePayment() {
@@ -34,4 +41,7 @@ export class UserPaymentComponent implements OnInit {
   }
 
 
+  selectContact(address : string) {
+    this.receiver = address
+  }
 }

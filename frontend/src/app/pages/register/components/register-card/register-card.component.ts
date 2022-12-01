@@ -19,7 +19,7 @@ export class RegisterCardComponent implements OnInit {
   constructor(private fidoService: FidoService,
               private authService: AuthenticationService,
               private router: Router
-            
+
   ) {
 
   }
@@ -31,9 +31,13 @@ export class RegisterCardComponent implements OnInit {
     this.authService.registerInitialize(username, username)
       .then(res => {
         let jsonObj = res.data
-        this.fidoService.createCredential(jsonObj).then(res => {        
+        this.fidoService.createCredential(jsonObj).then(res => {
           this.authService.registerFinalize(username, res as PublicKeyCredential).then(res => {
-            this.router.navigate(["/login"])
+
+              return res.json()
+          }).then(data => {
+            this.authService.login(data.token)
+            this.router.navigate(["/dashboard"])
           })
         })
       })

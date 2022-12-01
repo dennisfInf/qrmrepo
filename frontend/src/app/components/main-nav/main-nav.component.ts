@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import {AuthenticationService} from "../../services/authentication.service";
+import {UserService} from "../../services/user.service";
+import {Router} from "@angular/router";
 
 
 @Component({
@@ -9,7 +12,7 @@ import { Component, OnInit } from '@angular/core';
 export class MainNavComponent implements OnInit {
   profileMenu: string = 'hidden';
   mainMenu : string = 'hidden';
-  constructor() { }
+  constructor(public authService : AuthenticationService, public userService : UserService, private router : Router) { }
 
   ngOnInit(): void {
   }
@@ -40,5 +43,10 @@ export class MainNavComponent implements OnInit {
     }else {
       this.mainMenu = 'hidden'
     }
+  }
+
+  logout() {
+    this.authService.logout()
+    this.router.navigate(["/login"])
   }
 }
