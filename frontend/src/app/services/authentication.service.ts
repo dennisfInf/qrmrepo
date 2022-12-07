@@ -4,12 +4,12 @@ import { environment } from "../../environments/environment";
 import { JwtHelperService } from "@auth0/angular-jwt";
 import { buffer } from 'rxjs';
 
-function bufferEncode(value:ArrayBuffer) {
+function bufferEncode(value: ArrayBuffer) {
   return btoa(String.fromCharCode(...new Uint8Array(value))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "")
- /* var u8 = new Uint8Array(value);
-  var decoder = new TextDecoder('utf8');
-  var b64encoded = btoa(decoder.decode(u8));
-  return b64encoded*/
+  /* var u8 = new Uint8Array(value);
+   var decoder = new TextDecoder('utf8');
+   var b64encoded = btoa(decoder.decode(u8));
+   return b64encoded*/
 }
 
 @Injectable({
@@ -61,15 +61,15 @@ export class AuthenticationService {
         }),
       })
 
-   /* return axios.post(
-      environment.routes.authenticationService + "/register/finalize",
-      token,
-      {
-        headers: {
-          "x-username": username
-        }
-      }
-    )*/
+    /* return axios.post(
+       environment.routes.authenticationService + "/register/finalize",
+       token,
+       {
+         headers: {
+           "x-username": username
+         }
+       }
+     )*/
   }
 
   async loginInitialize(username: string): Promise<any> {
@@ -102,10 +102,10 @@ export class AuthenticationService {
             authenticatorData: bufferEncode(assertionResponse.authenticatorData),
             clientDataJSON: bufferEncode(assertionResponse.clientDataJSON),
             signature: bufferEncode(assertionResponse.signature),
-            userHandle: bufferEncode(assertionResponse.userHandle??new ArrayBuffer(0)),
+            userHandle: bufferEncode(assertionResponse.userHandle ?? new ArrayBuffer(0)),
           },
-      }),
-    })
+        }),
+      })
     /*return axios.post(
       environment.routes.authenticationService + "/login/finalize",
       token,
@@ -141,34 +141,42 @@ export class AuthenticationService {
   }
 
 
-  async transactionInitialize(username: string, amount: string, receiver: string): Promise<string> {
-    return axios.post(
+  async transactionInitialize(token: any): Promise<any> {
+    return axios.get(
       environment.routes.authenticationService + "/transaction-init",
-      JSON.stringify(
-        {
-          username: username,
-          amount: amount,
-          receiver: receiver
-        }),
       {
         headers: {
-          "x-username": username,
+          'Authorization': 'Bearer ' + token,
         }
       }
     )
   }
 
-  async transactionFinalize(username: string, token: any): Promise<string> {
+  async transactionFinalize(receiver: string, token: any, amount: string, cred: PublicKeyCredential): Promise<any> {
+    const assertionResponse = cred.response as AuthenticatorAssertionResponse
     return axios.post(
       environment.routes.authenticationService + "/transaction-finalize",
-      token
-      ,
+      JSON.stringify({
+        id: cred.id,
+        rawId: bufferEncode(cred.rawId),
+        type: cred.type,
+        response: {
+          authenticatorData: bufferEncode(assertionResponse.authenticatorData),
+          clientDataJSON: bufferEncode(assertionResponse.clientDataJSON),
+          signature: bufferEncode(assertionResponse.signature),
+          userHandle: bufferEncode(assertionResponse.userHandle ?? new ArrayBuffer(0)),
+        },
+      }),
       {
         headers: {
-          "x-username": username,
+          'Authorization': 'Bearer ' + token,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          "x-receiver-address": receiver,
+          "x-amount": amount,
         }
       }
-    )
+    );
   }
 
 

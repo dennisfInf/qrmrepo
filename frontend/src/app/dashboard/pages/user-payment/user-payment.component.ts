@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import {AuthenticationService} from "../../../services/authentication.service";
-import {FidoService} from "../../../services/fido.service";
-import {Contact} from "../../../services/shared/contact";
-import {ContactResponse, ContactsService} from "../../../services/contacts.service";
+import { AuthenticationService } from "../../../services/authentication.service";
+import { FidoService } from "../../../services/fido.service";
+import { Contact } from "../../../services/shared/contact";
+import { ContactResponse, ContactsService } from "../../../services/contacts.service";
 
 @Component({
   selector: 'app-user-payment',
@@ -11,37 +11,37 @@ import {ContactResponse, ContactsService} from "../../../services/contacts.servi
 })
 export class UserPaymentComponent implements OnInit {
   receiver!: string;
-  amount! : string;
-  username : string
+  amount!: string;
+  token: string
   contacts!: Contact[]
-  constructor(private authService : AuthenticationService, private fidoService : FidoService, private contactService: ContactsService) {
-    this.username = authService.getToken()
+  constructor(private authService: AuthenticationService, private fidoService: FidoService, private contactService: ContactsService) {
+    this.token = authService.getToken()
   }
 
   ngOnInit(): void {
-     this.contactService.getContacts().then(res => {
-       let result = res.data as ContactResponse
-       this.contacts = result.contacts
-     })
+    this.contactService.getContacts().then(res => {
+      let result = res.data as ContactResponse
+      this.contacts = result.contacts
+    })
   }
 
   async makePayment() {
 
-    this.authService.transactionInitialize(this.username, this.amount, this.receiver)
+    this.authService.transactionInitialize(this.token)
       .then(res => {
-        let jsonObj = JSON.parse(res)
-        let userId = jsonObj.user.id
-        let challenge = jsonObj.challenge
-        /* this.fidoService.getCredential(challenge, userId).then(res => {
-          this.authService.transactionFinalize(this.username, res).then(res => {
-            console.log(res)
+        this.fidoService.getCredential(res.data).then(res => {
+          this.authService.transactionFinalize(this.receiver, this.token, this.amount, res as PublicKeyCredential).then(res => {
+            return res.json()
+
+          }).then(data => {
+            console.log(data)
           })
-        })*/
+        })
       })
   }
 
 
-  selectContact(address : string) {
+  selectContact(address: string) {
     this.receiver = address
   }
 }

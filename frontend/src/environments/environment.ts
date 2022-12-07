@@ -7,29 +7,29 @@ export const environment = {
   fido: {
     attestation: "none",               //"direct" | "enterprise" | "indirect" | "none"
     algorithm: -7,
-    authenticatorSelection : {
+    authenticatorSelection: {
       authenticatorAttachment: "platform",       // "cross-platform" | "platform"
       requireResidentKey: false,                       // true | false
       residentKey: "discouraged",                        // "discouraged" | "preferred" | "required"
       userVerification: "required",        // "discouraged" | "preferred" | "required"
     },
-    excludeCredentials:[],
+    excludeCredentials: [],
     extensions: {
       appid: undefined,
       appidExclude: undefined,
       credProps: false,
       uvm: false,
     },
-    pubKeyCredParams : [ ],
-    rp : {
-      domain: "elonwallet.io",
-      name: "elonwallet.io"
+    pubKeyCredParams: [],
+    rp: {
+      domain: "localhost:4200",
+      name: "localhost"
     },
     timeout: 60000,
   },
-  routes : {
+  routes: {
     // @ts-ignore
-    authenticationService: "https://elonwallet.io/api"
+    authenticationService: "http://localhost:8080"
   }
 };
 
