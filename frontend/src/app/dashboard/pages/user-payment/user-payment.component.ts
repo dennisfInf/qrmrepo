@@ -31,10 +31,7 @@ export class UserPaymentComponent implements OnInit {
       .then(res => {
         this.fidoService.getCredential(res.data).then(res => {
           this.authService.transactionFinalize(this.receiver, this.token, this.amount, res as PublicKeyCredential).then(res => {
-            return res.json()
-
-          }).then(data => {
-            console.log(data)
+            console.log(res.data.transaction_hash)
           })
         })
       })
