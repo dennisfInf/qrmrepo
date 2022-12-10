@@ -18,14 +18,14 @@ export const environment = {
       uvm: false,
     },
     pubKeyCredParams: [{ type: "public-key", alg: -7 }],
-    rp: {
-      domain: "",
+    rp : {
+      domain: "elonwallet.io",
       name: "elonwallet"
     },
     timeout: 60000,
   },
-  routes: {
+  routes : {
     // @ts-ignore
-    authenticationService: "http://localhost:8080"
+    authenticationService: "https://elonwallet.io/api"
   }
 };

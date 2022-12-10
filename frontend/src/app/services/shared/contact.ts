@@ -1,6 +1,6 @@
 export class Contact {
   name!:string
-  publicKey!: string
+  public_key!: string
 }
 
 export const ContactList : Contact[] = [

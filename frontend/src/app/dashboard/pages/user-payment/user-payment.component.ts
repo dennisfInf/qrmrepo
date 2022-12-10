@@ -3,6 +3,8 @@ import { AuthenticationService } from "../../../services/authentication.service"
 import { FidoService } from "../../../services/fido.service";
 import { Contact } from "../../../services/shared/contact";
 import { ContactResponse, ContactsService } from "../../../services/contacts.service";
+import {Router} from "@angular/router";
+import {timeout} from "rxjs";
 
 @Component({
   selector: 'app-user-payment',
@@ -14,7 +16,9 @@ export class UserPaymentComponent implements OnInit {
   amount!: string;
   token: string
   contacts!: Contact[]
-  constructor(private authService: AuthenticationService, private fidoService: FidoService, private contactService: ContactsService) {
+  error! : string
+  success: boolean = false;
+  constructor(private authService: AuthenticationService, private fidoService: FidoService, private contactService: ContactsService, private router: Router) {
     this.token = authService.getToken()
   }
 
@@ -31,7 +35,20 @@ export class UserPaymentComponent implements OnInit {
       .then(res => {
         this.fidoService.getCredential(res.data).then(res => {
           this.authService.transactionFinalize(this.receiver, this.token, this.amount, res as PublicKeyCredential).then(res => {
-            console.log(res.data.transaction_hash)
+            console.log(res)
+            if(res.data.message) {
+              // TODO: Error handling
+              console.log(res.data)
+            }else {
+              this.success = true
+
+              setTimeout( () =>{
+                this.router.navigate(["/dashboard"])
+              },1000)
+            }
+          }, err => {
+            console.log(err)
+            this.error = err.response.data.message
           })
         })
       })

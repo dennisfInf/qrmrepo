@@ -12,6 +12,9 @@ import {UserService} from "../../services/user.service";
 export class LoginComponent implements OnInit {
 
   constructor(private authService : AuthenticationService, private fidoService : FidoService, private router : Router, private userSerivce : UserService) {
+    if(this.authService.isAuthenticated()){
+      this.router.navigate(["/dashboard"])
+    }
   }
 
   ngOnInit(): void {

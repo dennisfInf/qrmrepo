@@ -127,7 +127,6 @@ export class AuthenticationService {
 
   public login(token: string): boolean {
     console.log("logging in")
-    console.log(token)
     localStorage.setItem("token", token)
     return true
   }
@@ -181,6 +180,7 @@ export class AuthenticationService {
 
 
   logout() {
+    console.log("removing item")
     localStorage.removeItem("token")
   }
 }

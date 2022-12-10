@@ -17,7 +17,7 @@ import {Router} from "@angular/router";
 })
 export class DashboardComponent implements OnInit {
 
-  transactions: Transaction[]
+  transactions!: any[]
   contacts!: Contact[]
   address: string
   etherscanTransactions: any[] = []
@@ -30,7 +30,10 @@ export class DashboardComponent implements OnInit {
               private userService: UserService,
               private etherscanService: EtherscanService,
               private router : Router) {
-    this.transactions = transactionService.getTransactions()
+    transactionService.getTransactions().then(res => {
+      console.log(res)
+      this.transactions = res.data.transactions
+    })
     contactService.getContacts().then(res => {
       console.log("contacts")
       console.log(res)
@@ -74,5 +77,16 @@ export class DashboardComponent implements OnInit {
         })
       })
     }
+  }
+
+  goToEtherscan(hash: string) {
+
+    let address = this.etherscanService.getTransactionLink(hash)
+    document.location.href = address;
+  }
+
+  getValueFromHex(hex : string) : number {
+    let dec = parseInt(hex, 16)
+    return this.gweiToEth(dec+ "")
   }
 }

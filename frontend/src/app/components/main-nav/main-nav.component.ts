@@ -46,6 +46,7 @@ export class MainNavComponent implements OnInit {
   }
 
   logout() {
+    console.log("logout click")
     this.authService.logout()
     this.router.navigate(["/login"])
   }
