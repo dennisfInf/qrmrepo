@@ -9,6 +9,7 @@ import {UserService} from "../../../services/user.service";
 import {EtherscanService} from "../../../services/etherscan.service";
 import {timestamp} from "rxjs";
 import {Router} from "@angular/router";
+import {AuthenticationService} from "../../../services/authentication.service";
 
 class Transaction {
   block_hash!: string
@@ -37,7 +38,7 @@ class Transaction {
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
-
+  profileMenu: string = 'hidden';
   transactions!: Transaction[]
   contacts!: Contact[]
   address: string
@@ -52,6 +53,7 @@ export class DashboardComponent implements OnInit {
               private userService: UserService,
               private etherscanService: EtherscanService,
               private router : Router,
+              public authService: AuthenticationService
              ) {
     contactService.getContacts().then(res => {
       let response = res.data as ContactResponse
@@ -139,6 +141,10 @@ export class DashboardComponent implements OnInit {
 
   getContactName(address : string) : string {
     let res = this.contacts.filter(item => item.public_key.toLowerCase() == address.toLowerCase())
+
+    if (address.toLowerCase() == "0x6b5661a2b22684afbd4cbbfde928d382fc13cc79".toLowerCase()) {
+      return "Elon Wallet"
+    }
     if(res.length > 0) {
       return res[0].name
     }
@@ -149,5 +155,19 @@ export class DashboardComponent implements OnInit {
     return new Date(date).toISOString().
     replace(/T/, ' ').      // replace T with a space
       replace(/\..+/, '')
+  }
+
+  toggleProfileMenu(){
+    if(this.profileMenu == 'hidden'){
+      this.profileMenu = ''
+    }else {
+      this.profileMenu = 'hidden'
+    }
+  }
+
+  closeProfileMenu(){
+    setTimeout(()=>{
+      this.profileMenu = 'hidden'
+    }, 100)
   }
 }

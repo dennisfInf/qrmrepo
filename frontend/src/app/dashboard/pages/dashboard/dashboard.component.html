@@ -1,11 +1,38 @@
 <div class="flex space-x-5 ">
+
   <div class="flex-col space-y-5 flex-grow">
     <!-- Make transaction -->
     <div class="bg-white col-span-2 rounded-md shadow-sm">
-      <div class="flex">
+      <div class="flex justify-between">
         <p class="p-5 font-bold">Your Balance </p>
         <p class="font-thin p-5 text-right text-gray-500"> Address: {{address}}</p>
+        <div class="flex space-x-1">
+          <p class="py-5 font-bold">Network: </p>
+          <div class="inline-block relative">
+            <div (click)="toggleProfileMenu()" (blur)="closeProfileMenu()"
+                 class=" outline-1 outline outline-purple-500 py-2 hover:bg-purple-100 rounded-xl px-2 select-none cursor-pointer m-3 transition ease-linear"  tabindex="1">
+              Görli Testnet
+            </div>
+            <div
+              class="origin-top-right absolute {{profileMenu}} right-1 w-56 -mt-2 rounded-xl shadow-lg bg-white overflow-hidden">
+              <div>
+                <div class="text-gray-700 block px-4 py-2 select-none hover:bg-gray-100 cursor-pointer">Görli Testnet</div>
+                <div  class="text-gray-400 block px-4 py-2 select-none">Main Net</div>
+                <div  class="text-gray-400 block px-4 py-2 select-none">Rinkeby Testnet</div>
+                <div  class="text-gray-400 block px-4 py-2 select-none">Kovan Testnet</div>
+                <hr>
+                <div  class="text-gray-400 block px-4 py-2 select-none">Ethereum</div>
+                <div  class="text-gray-400 block px-4 py-2 select-none">Polygon</div>
+                <div  class="text-gray-400 block px-4 py-2 select-none">Solana</div>
+                <div  class="text-gray-400 block px-4 py-2 select-none">Binance</div>
+                <div  class="text-gray-400 block px-4 py-2 select-none">Costum</div>
 
+              </div>
+            </div>
+
+          </div>
+
+        </div>
       </div>
       <p class="px-5 font-bold text-4xl">{{balance}} Eth</p>
       <p class="px-5">Available</p>
@@ -36,10 +63,7 @@
           <p class="text-xs text-right">{{getTimeString(transaction.block_timestamp)}}Uhr</p>
           <p class="text-green-600 font-bold" *ngIf="transaction.to_address.toUpperCase() == address.toUpperCase()">In</p>
           <p class="text-red-600 font-bold" *ngIf="transaction.to_address.toUpperCase() != address.toUpperCase()">Out</p>
-          <div class="flex space-x-10">
-            <p class="font-bold">Hash: </p>
-            <p>{{transaction.hash}}</p>
-          </div>
+
 
           <div class="flex space-x-5" *ngIf="transaction.to_address.toUpperCase() == address.toUpperCase()">
               <p class="font-bold w-16">From: </p>
@@ -56,7 +80,10 @@
             <p class="font-bold">Amount: </p>
             <p>{{gweiToEth(transaction.value)}} Eth</p>
           </div>
-
+          <div class="flex space-x-10">
+            <p class="font-bold">Hash: </p>
+            <p>{{transaction.hash}}</p>
+          </div>
 
         </div>
 
