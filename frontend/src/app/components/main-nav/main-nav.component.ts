@@ -18,11 +18,14 @@ export class MainNavComponent implements OnInit {
   }
 
   toggleProfileMenu(){
-    if(this.profileMenu == 'hidden'){
-      this.profileMenu = ''
-    }else {
-      this.profileMenu = 'hidden'
-    }
+    setTimeout(() => {
+      if(this.profileMenu == 'hidden'){
+        this.profileMenu = ''
+      }else {
+        this.profileMenu = 'hidden'
+      }
+    }, 800 )
+
   }
 
   closeMainMenu(){

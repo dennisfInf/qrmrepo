@@ -28,24 +28,43 @@ export class RegisterCardComponent implements OnInit {
   }
 
   async register(username:string) {
-    this.authService.registerInitialize(username, username)
-      .then(res => {
-        let jsonObj = res.data
-        this.fidoService.createCredential(jsonObj).then(res => {
-          this.authService.registerFinalize(username, res as PublicKeyCredential).then(res => {
+    if(this.validateEmail(username)) {
+      this.authService.registerInitialize(username, username)
+        .then(res => {
+          let jsonObj = res.data
+          this.fidoService.createCredential(jsonObj).then(res => {
+            this.authService.registerFinalize(username, res as PublicKeyCredential).then(res => {
 
               return res.json()
-          }).then(data => {
-            this.authService.login(data.token)
-            this.router.navigate(["/dashboard"])
+            }).then(data => {
+              this.authService.login(data.token)
+              this.router.navigate(["/dashboard"])
+            })
           })
+        }, err => {
+          this.error = "Email already registered"
+          setTimeout(() => {
+            this.error = ""
+          }, 5000)
         })
-      })
+    }else {
+      this.error = "Please enter a valid Email"
+      setTimeout(() => {
+        this.error = ""
+      }, 5000)
+    }
+
   }
 
-  displayError(message: string): void {
 
-  }
+  validateEmail(email : string)  {
+    return String(email)
+      .toLowerCase()
+      .match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      );
+  };
+
 
 
 

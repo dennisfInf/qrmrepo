@@ -1,15 +1,15 @@
 <div
   class="rounded-xl shadow-md shadow-purple-100 h-full sm:mx-16 md:mx-32 lg:mx-64 xl:mx-96 p-5 overflow-hidden bg-white select-none m-3 drop-shadow-lg">
   <label class="text-purple-600 text-lg font-bold mb-2" for="username">
-    Username
+    Email
   </label>
   <input
          class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-         id="username" type="text" placeholder="Select a username (this name will be public)" #username>
+         id="username" type="text" placeholder="Enter Email" #username>
   <button (click)="register(username.value)"
-          class="inline-block my-2 flex bg-purple-600 text-xl w-fit px-3 py-2 rounded-xl text-white hover:shadow-md hover:shadow-purple-300 cursor-pointer hover:-translate-y-0.5 transition duration-75">
+          class="inline-block mt-4 flex bg-purple-600 text-xl w-fit px-3 py-2 rounded-xl text-white hover:shadow-md hover:shadow-purple-300 cursor-pointer hover:-translate-y-0.5 transition duration-75">
     Register
   </button>
-
-  <p>{{error}}</p>
+  <a href="/login">Already a user? Sign in</a>
+  <p class="text-red-500 font-bold">{{error}}</p>
 </div>
