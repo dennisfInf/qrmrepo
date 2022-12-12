@@ -6,6 +6,7 @@ import { ContactResponse, ContactsService } from "../../../services/contacts.ser
 import {Router} from "@angular/router";
 import {timeout} from "rxjs";
 
+
 @Component({
   selector: 'app-user-payment',
   templateUrl: './user-payment.component.html',
@@ -41,7 +42,6 @@ export class UserPaymentComponent implements OnInit {
               console.log(res.data)
             }else {
               this.success = true
-
               setTimeout( () =>{
                 this.router.navigate(["/dashboard"])
               },1000)
@@ -57,5 +57,11 @@ export class UserPaymentComponent implements OnInit {
 
   selectContact(address: string) {
     this.receiver = address
+  }
+
+  shortAddress(address : string) : string {
+    let firstPart =  address.slice(0,8)
+    let lastPart = address.slice(address.length -4 , address.length)
+    return "(" + firstPart + "..." + lastPart + ")"
   }
 }

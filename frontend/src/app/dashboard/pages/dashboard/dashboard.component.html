@@ -16,9 +16,11 @@
       <div class="flex p-5 space-x-5">
         <button (click)="route()"
                 class="inline-block flex bg-purple-600 text-lg w-fit px-2 py-2 rounded-2xl text-white hover:shadow-md hover:shadow-purple-300 cursor-pointer hover:-translate-y-0.5 transition duration-75">
-          Withdrawal
+          Send
         </button>
-
+        <div class="flex justify-center items-center">
+          <p class="text-yellow-600 font-bold" *ngIf="pending">Pending...</p>
+        </div>
       </div>
 
     </div>
@@ -30,19 +32,29 @@
       </div>
 
 
-        <div (click)="goToEtherscan(transaction.hash)" class="hover:bg-purple-100 p-5 cursor-pointer rounded-md" *ngFor="let transaction of transactions">
+        <div (click)="goToEtherscan(transaction.hash)" class="hover:bg-gray-100 p-5 cursor-pointer mb-5 rounded-md {{transaction.to_address.toUpperCase() == address.toUpperCase() ? 'bg-green-50' : 'bg-red-50'}}" *ngFor="let transaction of transactions">
+          <p class="text-xs text-right">{{getTimeString(transaction.block_timestamp)}}Uhr</p>
+          <p class="text-green-600 font-bold" *ngIf="transaction.to_address.toUpperCase() == address.toUpperCase()">In</p>
+          <p class="text-red-600 font-bold" *ngIf="transaction.to_address.toUpperCase() != address.toUpperCase()">Out</p>
           <div class="flex space-x-10">
             <p class="font-bold">Hash: </p>
             <p>{{transaction.hash}}</p>
           </div>
 
-          <div class="flex space-x-14">
-              <p class="font-bold">To: </p>
-              <p>{{transaction.to}}</p>
-            </div>
+          <div class="flex space-x-5" *ngIf="transaction.to_address.toUpperCase() == address.toUpperCase()">
+              <p class="font-bold w-16">From: </p>
+              <p class="ml-15">{{getContactName(transaction.from_address)}}</p>
+              <p class="text-xs py-1">{{shortAddress(transaction.from_address)}}</p>
+          </div>
+
+          <div class="flex space-x-5" *ngIf="transaction.to_address.toUpperCase() != address.toUpperCase()">
+            <p class="font-bold w-16 ">To: </p>
+            <p class="ml-15">{{getContactName(transaction.to_address)}}</p>
+            <p class="text-xs py-1">{{shortAddress(transaction.to_address)}}</p>
+          </div>
           <div class="flex space-x-4">
             <p class="font-bold">Amount: </p>
-            <p>{{getValueFromHex(transaction.value)}} Eth</p>
+            <p>{{gweiToEth(transaction.value)}} Eth</p>
           </div>
 
 

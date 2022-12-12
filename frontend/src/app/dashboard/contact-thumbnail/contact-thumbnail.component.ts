@@ -16,4 +16,10 @@ export class ContactThumbnailComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  shortAddress(address : string) : string {
+    let firstPart =  address.slice(0,8)
+    let lastPart = address.slice(address.length -4 , address.length)
+    return "(" + firstPart + "..." + lastPart + ")"
+  }
+
 }

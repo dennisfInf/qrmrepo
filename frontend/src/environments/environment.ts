@@ -29,7 +29,7 @@ export const environment = {
   },
   routes: {
     // @ts-ignore
-    authenticationService: "http://localhost:8080"
+    authenticationService: "http://localhost:8080/api"
   }
 };
 

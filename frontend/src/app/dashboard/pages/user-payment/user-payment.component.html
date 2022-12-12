@@ -11,7 +11,7 @@
   <div class="flex flex-wrap ">
     <div *ngFor="let contact of contacts" class="p-2 cursor-pointer m-3 overflow-clip rounded-lg h-20 hover:bg-purple-200" (click)="selectContact(contact.public_key)">
       <p class="font-bold">{{contact.name}}</p>
-      <p class="text-xs text-gray-500">{{contact.public_key}}</p>
+      <p class="text-xs text-gray-500">{{shortAddress(contact.public_key)}}</p>
     </div>
   </div>
 
