@@ -34,7 +34,7 @@ export class AuthenticationService {
       environment.routes.authenticationService + "/register-init",
       {
         headers: {
-          "x-username": username,
+          "x-username": btoa(username),
           'Content-Type': 'application/json; charset=UTF-8',
         }
       }
@@ -48,7 +48,7 @@ export class AuthenticationService {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json; charset=UTF-8',
-          'x-username': username
+          'x-username': btoa(username)
         },
         method: "POST",
         body: JSON.stringify({
@@ -79,7 +79,7 @@ export class AuthenticationService {
       {
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
-          "x-username": username
+          "x-username": btoa(username)
         }
       }
     )
@@ -93,7 +93,7 @@ export class AuthenticationService {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json; charset=UTF-8',
-          'x-username': username
+          'x-username': btoa(username)
         },
         method: "POST",
         body: JSON.stringify({
