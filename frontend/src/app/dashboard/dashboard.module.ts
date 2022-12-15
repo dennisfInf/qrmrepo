@@ -17,12 +17,13 @@ import {FormsModule} from "@angular/forms";
     DashboardLayoutComponent,
     ContactThumbnailComponent,
     ShopThumbnailComponent,
-    UserPaymentComponent
+    UserPaymentComponent,
   ],
   imports: [
     CommonModule,
     RouterModule.forChild(DashboardRoutes),
-    FormsModule
+    FormsModule,
+
   ],
   exports : [
     RouterModule

@@ -19,6 +19,11 @@ export class EtherscanService {
     return axios.get(url)
   }
 
+  public async getGasPrice() :  Promise<AxiosResponse<any, any>>{
+    let url = "https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=" + this.apiKey
+    return axios.get(url)
+  }
+
   public async getTransactions(address : string, offset:number){
     let url = "https://api-goerli.etherscan.io/api" +
       "?module=account" +

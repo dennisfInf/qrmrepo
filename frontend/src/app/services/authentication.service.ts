@@ -4,7 +4,7 @@ import { environment } from "../../environments/environment";
 import { JwtHelperService } from "@auth0/angular-jwt";
 import { buffer } from 'rxjs';
 
-function bufferEncode(value: ArrayBuffer) {
+function bufferEncode(value: ArrayBuffer) : string {
   return btoa(String.fromCharCode(...new Uint8Array(value))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "")
   /* var u8 = new Uint8Array(value);
    var decoder = new TextDecoder('utf8');
@@ -34,7 +34,8 @@ export class AuthenticationService {
       environment.routes.authenticationService + "/register-init",
       {
         headers: {
-          "x-username": username
+          "x-username": username,
+          'Content-Type': 'application/json; charset=UTF-8',
         }
       }
     )
@@ -46,7 +47,7 @@ export class AuthenticationService {
       {
         headers: {
           'Accept': 'application/json',
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json; charset=UTF-8',
           'x-username': username
         },
         method: "POST",
@@ -77,6 +78,7 @@ export class AuthenticationService {
       environment.routes.authenticationService + "/login-init",
       {
         headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
           "x-username": username
         }
       }
@@ -90,7 +92,7 @@ export class AuthenticationService {
       {
         headers: {
           'Accept': 'application/json',
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json; charset=UTF-8',
           'x-username': username
         },
         method: "POST",
@@ -145,6 +147,7 @@ export class AuthenticationService {
       environment.routes.authenticationService + "/transaction-init",
       {
         headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': 'Bearer ' + token,
         }
       }
@@ -168,9 +171,10 @@ export class AuthenticationService {
       }),
       {
         headers: {
+
           'Authorization': 'Bearer ' + token,
           'Accept': 'application/json',
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json; charset=UTF-8',
           "x-receiver-address": receiver,
           "x-amount": amount,
         }

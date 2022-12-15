@@ -6,33 +6,7 @@
       <div class="flex justify-between">
         <p class="p-5 font-bold">Your Balance </p>
         <p class="font-thin p-5 text-right text-gray-500"> Address: {{address}}</p>
-        <div class="flex space-x-1">
-          <p class="py-5 font-bold">Network: </p>
-          <div class="inline-block relative">
-            <div (click)="toggleProfileMenu()" (blur)="closeProfileMenu()"
-                 class=" outline-1 outline outline-purple-500 py-2 hover:bg-purple-100 rounded-xl px-2 select-none cursor-pointer m-3 transition ease-linear"  tabindex="1">
-              Görli Testnet
-            </div>
-            <div
-              class="origin-top-right absolute {{profileMenu}} right-1 w-56 -mt-2 rounded-xl shadow-lg bg-white overflow-hidden">
-              <div>
-                <div class="text-gray-700 block px-4 py-2 select-none hover:bg-gray-100 cursor-pointer">Görli Testnet</div>
-                <div  class="text-gray-400 block px-4 py-2 select-none">Main Net</div>
-                <div  class="text-gray-400 block px-4 py-2 select-none">Rinkeby Testnet</div>
-                <div  class="text-gray-400 block px-4 py-2 select-none">Kovan Testnet</div>
-                <hr>
-                <div  class="text-gray-400 block px-4 py-2 select-none">Ethereum</div>
-                <div  class="text-gray-400 block px-4 py-2 select-none">Polygon</div>
-                <div  class="text-gray-400 block px-4 py-2 select-none">Solana</div>
-                <div  class="text-gray-400 block px-4 py-2 select-none">Binance</div>
-                <div  class="text-gray-400 block px-4 py-2 select-none">Costum</div>
 
-              </div>
-            </div>
-
-          </div>
-
-        </div>
       </div>
       <p class="px-5 font-bold text-4xl">{{balance}} Eth</p>
       <p class="px-5">Available</p>
@@ -96,6 +70,37 @@
   <!-- recent contacts -->
   <div class="rounded-md bg-white shadow-sm p-5 flex flex-col w-96">
     <div class="justify-between">
+      <div class="flex space-x-1 ">
+        <p class="py-5 font-bold">Network: </p>
+        <div class="inline-block relative">
+          <div (click)="toggleProfileMenu()" (blur)="closeProfileMenu()"
+               class=" outline-1 outline outline-purple-500 py-2 hover:bg-purple-100 rounded-xl px-2 select-none cursor-pointer m-3 transition ease-linear"  tabindex="1">
+            Görli
+          </div>
+          <div
+            class="origin-top-right absolute {{profileMenu}} right-1 w-56 -mt-2 rounded-xl shadow-lg bg-white outline outline-1 outline-gray-100 overflow-hidden">
+            <div class="py-2">
+              <p class="text-xs px-2">Testnet</p>
+              <div class="text-gray-900 block px-4 py-2 select-none hover:bg-gray-100 cursor-pointer">Görli</div>
+              <div  class="text-gray-400 block px-4 py-2 select-none">Rinkeby</div>
+              <div  class="text-gray-400 block px-4 py-2 select-none">Kovan</div>
+              <div  class="text-gray-400 block px-4 py-2 select-none">Mumbai</div>
+              <div  class="text-gray-400 block px-4 py-2 select-none">Westend</div>
+              <hr>
+              <p class="text-xs -mt-2 px-2 bg-white w-fit">Mainnet</p>
+              <div  class="text-gray-400 block px-4 py-2 select-none">Ethereum</div>
+              <div  class="text-gray-400 block px-4 py-2 select-none">Polygon</div>
+              <div  class="text-gray-400 block px-4 py-2 select-none">Solana</div>
+              <div  class="text-gray-400 block px-4 py-2 select-none">Binance</div>
+              <div  class="text-gray-400 block px-4 py-2 select-none">Costum</div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+      <hr class="mb-5">
       <p class="font-bold">Contacts</p>
       <div>
         <p>Alias</p>

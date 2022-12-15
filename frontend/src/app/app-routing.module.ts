@@ -4,11 +4,14 @@ import {RegisterComponent} from "./pages/register/register.component";
 import {DashboardModule} from "./dashboard/dashboard.module";
 import {AuthGuardService} from "./services/auth-guard.service";
 import {LoginComponent} from "./pages/login/login.component";
+import {MainLayoutComponent} from "./layouts/main-layout/main-layout.component";
+import {HomeComponent} from "./pages/home/home.component";
 
 
 const routes: Routes = [
   {
     path: "dashboard",
+    component: MainLayoutComponent,
     loadChildren: () => DashboardModule,
     canActivate: [AuthGuardService]
   },
@@ -23,6 +26,9 @@ const routes: Routes = [
   {
     path: "", redirectTo: "login", pathMatch: "full"
   },
+  {
+    path: "landing", component: HomeComponent
+  }
 
 
 ];

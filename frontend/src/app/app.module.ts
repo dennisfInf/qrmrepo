@@ -13,6 +13,8 @@ import {FormsModule} from "@angular/forms";
 
 import { TransactionPreviewComponent } from './components/transaction/transaction-preview/transaction-preview.component';
 import { LoginComponent } from './pages/login/login.component';
+import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
+import { HomeComponent } from './pages/home/home.component';
 
 
 @NgModule({
@@ -25,6 +27,8 @@ import { LoginComponent } from './pages/login/login.component';
     RegisterCardComponent,
     TransactionPreviewComponent,
     LoginComponent,
+    MainLayoutComponent,
+    HomeComponent,
 
   ],
   imports: [
@@ -34,6 +38,7 @@ import { LoginComponent } from './pages/login/login.component';
   ],
   providers: [],
   exports: [
+
   ],
   bootstrap: [AppComponent]
 })

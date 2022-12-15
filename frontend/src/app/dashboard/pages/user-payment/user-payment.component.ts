@@ -5,6 +5,7 @@ import { Contact } from "../../../services/shared/contact";
 import { ContactResponse, ContactsService } from "../../../services/contacts.service";
 import {Router} from "@angular/router";
 import {timeout} from "rxjs";
+import {EtherscanService} from "../../../services/etherscan.service";
 
 
 @Component({
@@ -19,7 +20,12 @@ export class UserPaymentComponent implements OnInit {
   contacts!: Contact[]
   error! : string
   success: boolean = false;
-  constructor(private authService: AuthenticationService, private fidoService: FidoService, private contactService: ContactsService, private router: Router) {
+  gasPrice!: string
+  constructor(private authService: AuthenticationService,
+              private fidoService: FidoService,
+              private contactService: ContactsService,
+              private router: Router,
+              private etherScanService : EtherscanService) {
     this.token = authService.getToken()
   }
 
@@ -27,6 +33,15 @@ export class UserPaymentComponent implements OnInit {
     this.contactService.getContacts().then(res => {
       let result = res.data as ContactResponse
       this.contacts = result.contacts
+
+    })
+
+    this.etherScanService.getGasPrice().then(res => {
+      console.log(res)
+      let price = +res.data.result.SafeGasPrice
+      let total = price * 21000
+      this.gasPrice =  this.gweiToEth(total+"") + ""
+      console.log(this.gasPrice)
     })
   }
 
@@ -64,4 +79,15 @@ export class UserPaymentComponent implements OnInit {
     let lastPart = address.slice(address.length -4 , address.length)
     return "(" + firstPart + "..." + lastPart + ")"
   }
+
+  getTotal(amount: string, fees: string) : string {
+    let a = +amount
+    let b = +fees
+    return a+ b + ""
+  }
+
+  gweiToEth(gwei : string) : number {
+    return Number(gwei)  * 0.000000000000000001
+  }
+
 }

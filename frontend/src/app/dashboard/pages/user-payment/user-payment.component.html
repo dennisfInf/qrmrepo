@@ -6,7 +6,12 @@
     <input type="text" [(ngModel)]="receiver" class="focus:outline-purple-600 p-2 border rounded-md w-96">
     <p>Amount</p>
     <input [(ngModel)]="amount" class="focus:outline-purple-600 p-2 border rounded-md w-96">
-    <div class="p-3 bg-purple-600 rounded-md w-fit text-white cursor-pointer" (click)="makePayment()">Send</div>
+    <div class="flex space-x-10 mt-5">
+      <div class="p-3 bg-purple-600 rounded-md w-fit text-white cursor-pointer" (click)="makePayment()">Send</div>
+      <div>
+        <p class="py-3" *ngIf="getTotal(amount,gasPrice) != 'NaN' && !getTotal(amount,gasPrice).includes('e')"> Estimated Total: {{getTotal(amount,gasPrice)}} Eth</p>
+      </div>
+    </div>
   </div>
   <div class="flex flex-wrap ">
     <div *ngFor="let contact of contacts" class="p-2 cursor-pointer m-3 overflow-clip rounded-lg h-20 hover:bg-purple-200" (click)="selectContact(contact.public_key)">
