@@ -13,7 +13,7 @@ const routes: Routes = [
     path: "dashboard",
     component: MainLayoutComponent,
     loadChildren: () => DashboardModule,
-    canActivate: [AuthGuardService]
+    canActivate: []
   },
   {
     path: "register",
@@ -24,11 +24,8 @@ const routes: Routes = [
     component: LoginComponent
   },
   {
-    path: "", redirectTo: "login", pathMatch: "full"
+    path: "", component: HomeComponent
   },
-  {
-    path: "landing", component: HomeComponent
-  }
 
 
 ];
