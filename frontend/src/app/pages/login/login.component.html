@@ -1,4 +1,4 @@
-<div class="container mx-auto flex flex-col h-screen -mt-32 justify-around" >
+<div class="container mx-auto flex flex-col h-screen -mt-32 justify-around">
   <div class="container mx-auto flex flex-col">
     <div
       class="rounded-xl shadow-md shadow-purple-100 h-full sm:mx-16 md:mx-32 lg:mx-64 xl:mx-96 p-5 overflow-hidden bg-white select-none m-3 drop-shadow-lg">
@@ -8,8 +8,13 @@
       <input
         class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
         id="username" type="text" placeholder="Enter Email" #username>
-      <button (click)="login(username.value)"
-              class="inline-block mt-4 flex bg-purple-600 text-xl w-fit px-3 py-2 rounded-xl text-white hover:shadow-md hover:shadow-purple-300 cursor-pointer hover:-translate-y-0.5 transition duration-75">
+      <input
+        class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        id="password" type="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" placeholder="Enter Password"
+        title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"
+        #password>
+      <button (click)="login(username.value,password.value)"
+        class="inline-block mt-4 flex bg-purple-600 text-xl w-fit px-3 py-2 rounded-xl text-white hover:shadow-md hover:shadow-purple-300 cursor-pointer hover:-translate-y-0.5 transition duration-75">
         Login
       </button>
 
@@ -19,4 +24,3 @@
     </div>
   </div>
 </div>
-

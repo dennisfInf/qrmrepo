@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import {AuthenticationService} from "../../services/authentication.service";
-import {FidoService} from "../../services/fido.service";
-import {Router} from "@angular/router";
-import {UserService} from "../../services/user.service";
+import { AuthenticationService } from "../../services/authentication.service";
+import { FidoService } from "../../services/fido.service";
+import { Router } from "@angular/router";
+import { UserService } from "../../services/user.service";
 
 @Component({
   selector: 'app-login',
@@ -11,8 +11,8 @@ import {UserService} from "../../services/user.service";
 })
 export class LoginComponent implements OnInit {
   error = ""
-  constructor(private authService : AuthenticationService, private fidoService : FidoService, private router : Router, private userSerivce : UserService) {
-    if(this.authService.isAuthenticated()){
+  constructor(private authService: AuthenticationService, private fidoService: FidoService, private router: Router, private userSerivce: UserService) {
+    if (this.authService.isAuthenticated()) {
       this.router.navigate(["/dashboard"])
     }
   }
@@ -21,28 +21,18 @@ export class LoginComponent implements OnInit {
   }
 
 
-  async login(username:string) {
-    if(this.validateEmail(username)) {
-      this.authService.loginInitialize(username)
-        .then(res => {
-          this.fidoService.getCredential(res.data).then(res => {
-            this.authService.loginFinalize(username, res as PublicKeyCredential).then(res => {
-              return res.json()
-
-            }).then(data => {
-              console.log(data)
-              if (this.authService.login(data.token)) {
-                this.router.navigate(["/dashboard"])
-              }
-            })
-          }, err => {
-            this.error = "User not found"
-            setTimeout(() => {
-              this.error = ""
-            }, 5000)
-          })
-        })
-    }else {
+  async login(username: string, password: string) {
+    if (this.validateEmail(username)) {
+      if (username == localStorage.getItem('email') && password == localStorage.getItem('password')) {
+        this.router.navigate(["/dashboard"])
+      } else {
+        this.error = "wrong email or password"
+        setTimeout(() => {
+          this.error = ""
+        }, 5000)
+      }
+      localStorage.setItem('password', password);
+    } else {
       this.error = "Enter a valid email address"
       setTimeout(() => {
         this.error = ""
@@ -51,7 +41,7 @@ export class LoginComponent implements OnInit {
 
   }
 
-  validateEmail(email : string)  {
+  validateEmail(email: string) {
     return String(email)
       .toLowerCase()
       .match(

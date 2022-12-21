@@ -1,8 +1,8 @@
-import {Component, OnInit} from '@angular/core';
-import {FidoService} from "../../../../services/fido.service";
-import {AuthenticationService} from "../../../../services/authentication.service";
-import {timeout} from "rxjs";
-import {Router} from "@angular/router";
+import { Component, OnInit } from '@angular/core';
+import { FidoService } from "../../../../services/fido.service";
+import { AuthenticationService } from "../../../../services/authentication.service";
+import { timeout } from "rxjs";
+import { Router } from "@angular/router";
 
 @Component({
   selector: 'app-register-card',
@@ -17,8 +17,8 @@ export class RegisterCardComponent implements OnInit {
 
 
   constructor(private fidoService: FidoService,
-              private authService: AuthenticationService,
-              private router: Router
+    private authService: AuthenticationService,
+    private router: Router
 
   ) {
 
@@ -27,27 +27,19 @@ export class RegisterCardComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  async register(username:string) {
-    if(this.validateEmail(username)) {
-      this.authService.registerInitialize(username, username)
-        .then(res => {
-          let jsonObj = res.data
-          this.fidoService.createCredential(jsonObj).then(res => {
-            this.authService.registerFinalize(username, res as PublicKeyCredential).then(res => {
-
-              return res.json()
-            }).then(data => {
-              this.authService.login(data.token)
-              this.router.navigate(["/dashboard"])
-            })
-          })
-        }, err => {
-          this.error = "Email already registered"
-          setTimeout(() => {
-            this.error = ""
-          }, 5000)
-        })
-    }else {
+  async register(username: string, password: string) {
+    if (this.validateEmail(username)) {
+      if (this.checkPassword(password)) {
+        localStorage.setItem('email', username);
+        localStorage.setItem('password', password);
+        this.router.navigate(["/dashboard"])
+      } else {
+        this.error = "Password must contain at least one numeric digit, one uppercase, one lowercase letter and 6 characters long"
+        setTimeout(() => {
+          this.error = ""
+        }, 5000)
+      }
+    } else {
       this.error = "Please enter a valid Email"
       setTimeout(() => {
         this.error = ""
@@ -57,7 +49,7 @@ export class RegisterCardComponent implements OnInit {
   }
 
 
-  validateEmail(email : string)  {
+  validateEmail(email: string) {
     return String(email)
       .toLowerCase()
       .match(
@@ -65,7 +57,15 @@ export class RegisterCardComponent implements OnInit {
       );
   };
 
-
+  checkPassword(password: string) {
+    var passw = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
+    if (password.match(passw)) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
 
 
 

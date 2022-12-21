@@ -4,10 +4,15 @@
     Email
   </label>
   <input
-         class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-         id="username" type="text" placeholder="Enter Email" #username>
-  <button (click)="register(username.value)"
-          class="inline-block mt-4 flex bg-purple-600 text-xl w-fit px-3 py-2 rounded-xl text-white hover:shadow-md hover:shadow-purple-300 cursor-pointer hover:-translate-y-0.5 transition duration-75">
+    class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+    id="username" type="text" placeholder="Enter Email" #username>
+  <input
+    class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+    id="password" type="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" placeholder="Enter Password"
+    title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"
+    #password>
+  <button (click)="register(username.value, password.value)"
+    class="inline-block mt-4 flex bg-purple-600 text-xl w-fit px-3 py-2 rounded-xl text-white hover:shadow-md hover:shadow-purple-300 cursor-pointer hover:-translate-y-0.5 transition duration-75">
     Register
   </button>
   <a href="/login">Already a user? Sign in</a>
